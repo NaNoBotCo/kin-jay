@@ -1,0 +1,305 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@600;800;900&family=Sriracha&family=Fraunces:opsz,wght@9..144,800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@900&display=swap&text=齋齊示" rel="stylesheet">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="cv" width="1080" height="1920"></canvas>
+<div style="position:absolute;left:-9999px;font-family:'Noto Sans Thai';font-weight:900">กินเจ เจ 9 วัน</div>
+<div style="position:absolute;left:-9999px;font-family:'Sriracha'">เชียงใหม่ Kin</div>
+<div style="position:absolute;left:-9999px;font-family:'Noto Serif TC';font-weight:900">齋齊示</div>
+<script src="data.js"></script>
+<script>
+window.UI = { lang: "th", towns: REEL.th.towns, seas: REEL.th.seas, landmarks: REEL.th.landmarks, mapnotes: REEL.th.mapnotes, places: REEL.places };
+window.matchMedia = window.matchMedia || function () { return { matches: false }; };
+</script>
+<script src="../docs/app.js"></script>
+<script src="../docs/doodle.js"></script>
+<script>
+/* Kin Jay, 45 seconds, 1080 × 1920. stage.render(t) draws frame t; render.mjs steps it. Beats sit on a
+   120 bpm grid (0.5 s) so the drums in audio.py land on the cuts. */
+(function () {
+"use strict";
+var cv = document.getElementById("cv"), c = cv.getContext("2d"), W = 1080, H = 1920, TAU = Math.PI * 2;
+var K = window.JAYKIT, D = window.JAYDOODLE, YEL = "#ffd21f", RED = "#c8102e", DEEP = "#5c0a14", INK = "#2b1a10";
+D.setMap(REEL.map);
+var IMG = {};
+["steamed-buns", "veg-pork-sign", "soy-protein", "parade-phuket", "firecrackers-2011", "krabi-sedan", "che-sign", "cherngtalay-shrine", "ma-song"].forEach(function (k) {
+  var i = new Image(); i.src = "../docs/img/" + k + ".jpg"; IMG[k] = i;
+});
+var CREDIT = {
+  "steamed-buns": "ภาพ Kirill Kay · CC BY-SA 3.0 · Wikimedia Commons", "veg-pork-sign": "ภาพ Dahlfred · CC BY-SA 3.0 · Wikimedia Commons",
+  "soy-protein": "ภาพ ศีลงูสาวสวยปาแหวน · CC BY-SA 3.0 · Wikimedia Commons", "parade-phuket": "ภาพ Kirill Kay · CC BY-SA 3.0 · Wikimedia Commons",
+  "firecrackers-2011": "ภาพ Joseph Ferris III · CC BY 2.0 · Wikimedia Commons", "krabi-sedan": "ภาพ OraMAAG · CC BY 4.0 · Wikimedia Commons",
+  "che-sign": "ภาพ Pawyilee · สาธารณสมบัติ · Wikimedia Commons", "cherngtalay-shrine": "ภาพ Kirill Kay · CC BY-SA 3.0 · Wikimedia Commons",
+  "ma-song": "ภาพ Kirill Kay · CC BY-SA 3.0 · Wikimedia Commons"
+};
+
+/* ---------- helpers ---------- */
+function clamp(x, a, b) { return x < a ? a : x > b ? b : x; }
+function k01(t, a, b) { return clamp((t - a) / (b - a), 0, 1); }
+function easeOut(u) { return 1 - Math.pow(1 - u, 3); }
+function back(u) { var s = 1.9; u = clamp(u, 0, 1) - 1; return u * u * ((s + 1) * u + s) + 1; }
+function pop(t, at, d) { return back(k01(t, at, at + (d || 0.35))); }
+function rnd(seed) { var s = seed >>> 0 || 1; return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+var HITS = [];   // [time, strength] screen shakes
+function shake(t) {
+  var x = 0, y = 0;
+  HITS.forEach(function (h) { var d = t - h[0]; if (d >= 0 && d < 0.35) { var a = h[1] * (1 - d / 0.35); x += Math.sin(d * 90) * a; y += Math.cos(d * 70) * a; } });
+  return [x, y];
+}
+function cap(th, en, y, t, at, o) {          // a caption that pops in: Thai big, English under
+  o = o || {}; var s = pop(t, at, 0.3); if (s <= 0) return;
+  var size = o.size || 104, col = o.col || "#fff8e6", stroke = o.stroke || "#2a0508";
+  c.save(); c.translate(W / 2, y); c.scale(s, s); c.textAlign = "center"; c.textBaseline = "middle";
+  c.lineJoin = "round";
+  c.font = "900 " + size + "px 'Noto Sans Thai'"; c.lineWidth = size * 0.16; c.strokeStyle = stroke; c.strokeText(th, 0, 0); c.fillStyle = col; c.fillText(th, 0, 0);
+  if (en) { var es = o.esize || Math.round(size * 0.46); c.font = "800 " + es + "px 'Noto Sans Thai'"; c.lineWidth = es * 0.2; c.strokeText(en, 0, size * 0.78); c.fillStyle = o.ecol || YEL; c.fillText(en, 0, size * 0.78); }
+  c.restore();
+}
+function credit(s) { c.save(); c.font = "600 26px 'Noto Sans Thai'"; c.fillStyle = "rgba(255,255,255,.85)"; c.textAlign = "center"; c.shadowColor = "#000"; c.shadowBlur = 6; c.fillText(s, W / 2, H - 60); c.restore(); }
+function photo(img, t, at, dur, zoom) {      // Ken Burns, cover-fit
+  if (!img.complete || !img.naturalWidth) return;
+  var u = k01(t, at, at + dur), z = 1.08 + (zoom || 0.14) * u, iw = img.naturalWidth, ih = img.naturalHeight;
+  var s = Math.max(W / iw, H / ih) * z, dw = iw * s, dh = ih * s;
+  c.drawImage(img, (W - dw) / 2 - (zoom > 0 ? 30 : -30) * u, (H - dh) / 2, dw, dh);
+  var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "rgba(0,0,0,.45)"); g.addColorStop(0.35, "rgba(0,0,0,0)"); g.addColorStop(0.7, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.6)");
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+}
+function bunting(t, y0, sag, n, size, drop) {   // a string of 齋 / เจ pennants, dropping in
+  var dy = drop == null ? 0 : (1 - back(drop)) * -500;
+  c.save(); c.translate(0, dy);
+  c.strokeStyle = "rgba(255,230,190,.7)"; c.lineWidth = 3; c.beginPath();
+  for (var x = 0; x <= W; x += 20) { var u = x / W, yy = y0 + sag * 4 * u * (1 - u); if (x) c.lineTo(x, yy); else c.moveTo(x, yy); } c.stroke();
+  for (var i = 0; i < n; i++) {
+    var x2 = (i + 0.5) * W / n, u2 = x2 / W, y2 = y0 + sag * 4 * u2 * (1 - u2), a = 0.16 * Math.sin(t * 3 + i * 1.3) + 0.06 * Math.sin(t * 7 + i);
+    K.pennant(c, x2, y2, size, size * 1.25, a, 0, i % 2 ? "เจ" : "齋");
+  }
+  c.restore();
+}
+function bgRed() { var g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#3a0710"); g.addColorStop(0.6, "#7d1420"); g.addColorStop(1, "#d8641c"); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+function bgPaper(seed) { D.paper(c, W, H, seed || 3); }
+function stamp(t, at, draw) {                  // something slammed onto the frame: 3× → 1×
+  var u = k01(t, at, at + 0.22); if (t < at) return;
+  var s = 1 + 2 * (1 - easeOut(u)), a = u;
+  c.save(); c.globalAlpha = a; c.translate(W / 2, H / 2); c.scale(s, s); c.translate(-W / 2, -H / 2); draw(); c.restore();
+}
+function garlic(x, y, s) {
+  D.shape(c, [[x - s, y], [x - s * 0.9, y - s * 0.8], [x - s * 0.2, y - s * 1.2], [x, y - s * 1.9], [x + s * 0.2, y - s * 1.2], [x + s * 0.9, y - s * 0.8], [x + s, y], [x, y + s * 0.3]], "#f6efe0", 3, 4);
+  D.ink(c, [[x, y - s * 1.2], [x, y + s * 0.2]], { seed: 4, w: 3 });
+  D.ink(c, [[x - s * 0.5, y - s * 0.9], [x - s * 0.4, y + s * 0.1]], { seed: 5, w: 3 }); D.ink(c, [[x + s * 0.5, y - s * 0.9], [x + s * 0.4, y + s * 0.1]], { seed: 6, w: 3 });
+}
+function bigX(x, y, s, t, at) {
+  var u = k01(t, at, at + 0.18); if (u <= 0) return;
+  c.save(); c.globalAlpha = 0.92; c.strokeStyle = RED; c.lineWidth = s * 0.16; c.lineCap = "round";
+  c.beginPath(); c.moveTo(x - s, y - s); c.lineTo(x - s + 2 * s * u, y - s + 2 * s * u); c.stroke();
+  if (u > 0.5) { var v = (u - 0.5) * 2; c.beginPath(); c.moveTo(x + s, y - s); c.lineTo(x + s - 2 * s * v, y - s + 2 * s * v); c.stroke(); }
+  c.restore();
+}
+function tick(x, y, s, t, at) {
+  var u = k01(t, at, at + 0.18); if (u <= 0) return;
+  c.save(); c.strokeStyle = "#2f9a4a"; c.lineWidth = s * 0.18; c.lineCap = c.lineJoin = "round"; c.beginPath();
+  c.moveTo(x - s, y); c.lineTo(x - s * 0.3, y + s * 0.7 * Math.min(1, u * 2)); if (u > 0.5) c.lineTo(x - s * 0.3 + s * 1.3 * (u - 0.5) * 2, y + s * 0.7 - s * 1.5 * (u - 0.5) * 2); c.stroke(); c.restore();
+}
+
+/* ---------- the beats ---------- */
+var SEC = [
+  [0, 3.5, hook], [3.5, 8, flag], [8, 15.5, wok], [15.5, 21.5, menu], [21.5, 31, festival], [31, 37, legend], [37, 41.5, north], [41.5, 45, end]
+];
+// shakes on the big hits (audio.py puts drums and stamps on the same times)
+HITS.push([0.0, 16], [1.2, 12], [1.5, 30], [2.0, 22], [4.2, 26], [5.6, 26], [11.5, 34], [12.5, 14], [13.0, 14], [13.5, 14], [33.5, 20], [41.5, 18]);
+
+function hook(t) {
+  if (t < 1.2) {
+    c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
+    photo(IMG["parade-phuket"], t, 0, 1.2, 0.25);
+    cap("ทั้งเมืองใส่ชุดขาว", "A whole town in white.", 300, t, 0.05, { size: 112 });
+    cap("ทำไม?", "Why?", 1250, t, 0.55, { size: 200, col: YEL });
+    credit(CREDIT["parade-phuket"]);
+    return;
+  }
+  bgRed();
+  bunting(t, 120, 70, 9, 96, k01(t, 1.2, 1.6));
+  bunting(t, 330, 80, 11, 78, k01(t, 1.4, 1.8));
+  var s0 = pop(t, 1.2, 0.25); c.save(); c.translate(W / 2, 1080); c.scale(s0 * 1.8, s0 * 1.8); garlic(0, 60, 95); c.restore();
+  bigX(W / 2, 1040, 250, t, 1.5);
+  cap("9 วัน", "", 600, t, 2.0, { size: 240, col: YEL });
+  cap("ไม่มีกระเทียม", "9 days. Zero garlic.", 1420, t, 2.5, { size: 124 });
+}
+function flag(t) {
+  bgPaper(7);
+  function oneFlag(x, ch, at) {
+    var u = pop(t, at, 0.3); if (u <= 0) return;
+    c.save(); c.translate(x, 760); c.rotate(Math.sin(t * 2.5 + x) * 0.03);
+    c.fillStyle = YEL; c.strokeStyle = RED; c.lineWidth = 12;
+    c.fillRect(-190, -260, 380, 520); c.strokeRect(-190, -260, 380, 520);
+    if (t > at + 0.25) { c.fillStyle = RED; K.letter(c, ch, 0, 0, 330 * pop(t, at + 0.25, 0.2)); }
+    c.restore();
+  }
+  oneFlag(290, "齋", 3.7);
+  oneFlag(790, "เจ", 5.1);
+  cap("เห็นธงนี้", "See this flag?", 1230, t, 6.4, { size: 120, col: RED, stroke: "#fff8e6", ecol: INK });
+  cap("ไม่มีของจากสัตว์", "Nothing from an animal.", 1430, t, 7.0, { size: 100, col: INK, stroke: "#fff8e6", ecol: RED });
+  // labels under each flag
+  if (t > 4.2) { c.save(); c.font = "900 64px 'Noto Sans Thai'"; c.textAlign = "center"; c.fillStyle = INK; c.globalAlpha = k01(t, 4.2, 4.5); c.fillText("ป้ายจีน 齋", 290, 1110); c.restore(); }
+  if (t > 5.6) { c.save(); c.font = "900 64px 'Noto Sans Thai'"; c.textAlign = "center"; c.fillStyle = INK; c.globalAlpha = k01(t, 5.6, 5.9); c.fillText("ป้ายไทย เจ", 790, 1110); c.restore(); }
+}
+var FOODS = [
+  { at: 8.5, th: "เต้าหู้", en: "tofu", col: "#f6efd8", ok: 1 },
+  { at: 9.0, th: "เห็ดหอม", en: "shiitake", col: "#7a5236", ok: 1 },
+  { at: 9.5, th: "คะน้า", en: "kale", col: "#3f8f3a", ok: 1 },
+  { at: 10.0, th: "หมูแดง?!", en: "red pork?!", col: "#b9422e", ok: 1, note: ["ทำจากแป้งสาลี", "it's wheat gluten"] },
+  { at: 11.5, th: "กระเทียม", en: "GARLIC", col: "#f3eee0", ok: 0, big: 1 },
+  { at: 12.5, th: "หอมแดง", en: "shallot", col: "#b0566a", ok: 0 },
+  { at: 13.0, th: "ไข่", en: "egg", col: "#ffd34d", ok: 0 },
+  { at: 13.5, th: "น้ำปลา", en: "fish sauce", col: "#8a4a18", ok: 0 }
+];
+function wok(t) {
+  bgPaper(11);
+  var cx = W / 2, cy = 1180, rw = 400, rh = 150, bad = t >= 11.5;
+  if (bad && t < 12.2) { c.fillStyle = "rgba(200,16,46," + (0.35 * (1 - k01(t, 11.5, 12.2))) + ")"; c.fillRect(0, 0, W, H); }
+  for (var k = 0; k < 9; k++) { var fx = cx - 320 + k * 80, fl = 60 + 30 * Math.sin(t * 13 + k * 2.1); c.fillStyle = "rgba(255," + (110 + k * 12) + ",40,.85)"; c.beginPath(); c.moveTo(fx - 26, cy + rh + 110); c.quadraticCurveTo(fx, cy + rh + 110 - fl * 2, fx + 26, cy + rh + 110); c.fill(); }
+  c.fillStyle = "#2b2a2a"; c.beginPath(); c.ellipse(cx, cy, rw, rh, 0, 0, Math.PI); c.fill();
+  c.fillStyle = "#4a4746"; c.beginPath(); c.ellipse(cx, cy, rw, rh * 0.35, 0, 0, TAU); c.fill();
+  c.strokeStyle = "#2b2a2a"; c.lineWidth = 22; c.beginPath(); c.moveTo(cx + rw - 10, cy); c.lineTo(cx + rw + 120, cy - 60); c.stroke();
+  // the flag on the cart: up while it's jay, down after the garlic
+  var px = 120, top = 520;
+  c.strokeStyle = "#6b4a2a"; c.lineWidth = 10; c.beginPath(); c.moveTo(px, top); c.lineTo(px, 1500); c.stroke();
+  var fy = bad ? top + 760 * easeOut(k01(t, 11.5, 12.0)) : top;
+  c.save(); c.translate(px + 4, fy); c.fillStyle = YEL; c.strokeStyle = RED; c.lineWidth = 6; c.fillRect(0, 0, 170, 210); c.strokeRect(0, 0, 170, 210); c.fillStyle = RED; K.letter(c, "เจ", 85, 100, 150); c.restore();
+  FOODS.forEach(function (f, i) {
+    if (t < f.at) return;
+    var d = t - f.at, y = Math.min(cy - 10, 380 + d * d * 2600), x = cx - 160 + (i % 4) * 110;
+    if (y >= cy - 10) { c.fillStyle = f.col; c.beginPath(); c.arc(cx - 200 + i * 55, cy - 12 + (i % 2) * 14, 30, 0, TAU); c.fill(); }
+    else if (f.big) { c.save(); c.translate(x, y); garlic(0, 0, 70); c.restore(); }
+    else { c.fillStyle = f.col; c.strokeStyle = "rgba(0,0,0,.3)"; c.lineWidth = 3; c.beginPath(); c.arc(x, y, 44, 0, TAU); c.fill(); c.stroke(); }
+  });
+  // what just went in, as a caption
+  var cur = null; FOODS.forEach(function (f) { if (t >= f.at) cur = f; });
+  if (cur && t < 14.0) {
+    cap(cur.th, cur.en, cur.big ? 330 : 360, t, cur.at, { size: cur.big ? 150 : 120, col: cur.ok ? INK : RED, stroke: "#fff8e6", ecol: cur.ok ? "#2f7a3a" : RED });
+    if (cur.ok) tick(W / 2 + 330, 360, 60, t, cur.at + 0.1); else bigX(W / 2 + (cur.big ? 0 : 330), cur.big ? 330 : 360, cur.big ? 220 : 70, t, cur.at + 0.05);
+    if (cur.note && t > cur.at + 0.3) cap(cur.note[0], cur.note[1], 560, t, cur.at + 0.3, { size: 80, col: "#2f7a3a", stroke: "#fff8e6", ecol: INK });
+    if (cur.big) cap("ไม่เจ!", "NOT JAY", 720, t, 11.7, { size: 190, col: RED, stroke: "#fff8e6", ecol: INK });
+  }
+  if (t >= 14.0) cap("งดผักฉุน 5 อย่าง!", "No pungent five.", 400, t, 14.0, { size: 110, col: RED, stroke: "#fff8e6", ecol: INK });
+}
+function menu(t) {
+  var shots = [["steamed-buns", 15.5, 1.3, "ซาลาเปา ขนมจีบเห็ด", "buns & mushroom dumplings"], ["veg-pork-sign", 16.8, 1.3, "บะหมี่หมูแดง... เจ", "red-pork noodles... jay"], ["soy-protein", 18.1, 1.3, "โปรตีนเกษตร", "soy protein"]];
+  var cur = shots[0]; shots.forEach(function (s) { if (t >= s[1]) cur = s; });
+  if (t < 19.4) {
+    c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
+    photo(IMG[cur[0]], t, cur[1], cur[2], cur[0] === "veg-pork-sign" ? -0.1 : 0.16);
+    cap(cur[3], cur[4], 1400, t, cur[1] + 0.1, { size: 104 });
+    credit(CREDIT[cur[0]]);
+    if (t < 16.8) cap("สั่งอะไรดี?", "What to order?", 220, t, 15.6, { size: 110, col: YEL });
+    return;
+  }
+  bgPaper(5);
+  var dishes = [["ผัดหมี่ซั่ว", "longevity noodles", 19.4], ["จับฉ่าย", "mixed-veg stew", 19.8], ["แกงเขียวหวานเจ", "jay green curry", 20.2]];
+  dishes.forEach(function (d, i) {
+    var s = pop(t, d[2]); if (s <= 0) return; var y = 480 + i * 470;
+    c.save(); c.translate(W / 2, y); c.scale(s * 1.5, s * 1.5);
+    D.shape(c, [[-180, -40], [180, -40], [130, 80], [-130, 80]], ["#f2a531", "#e8d7b0", "#7cb35a"][i], 30 + i, 5);
+    for (var k = 0; k < 3; k++) D.ink(c, [[-60 + k * 60, -50], [-45 + k * 60 + Math.sin(t * 4 + k) * 8, -80], [-60 + k * 60, -110]], { seed: 40 + k, w: 5, a: 0.5 });
+    c.restore();
+    cap(d[0], d[1], y + 190, t, d[2] + 0.05, { size: 90, col: INK, stroke: "#fff8e6", ecol: RED });
+  });
+}
+var ORDER = ["phuket", "bkk", "korat", "hatyai", "trang", "krabi", "phangnga", "cm", "cr"];
+function festival(t) {
+  if (t < 26.5) {
+    bgPaper(9);
+    c.save(); c.translate(70, 260); var MW = 940, MH = 1360;
+    var P = D.drawThailand(c, MW, MH);
+    Object.keys(UI.towns).forEach(function (k, i) { var T = UI.towns[k], q = P(T.lat, T.lng); if (D.ICON[T.icon]) D.ICON[T.icon](c, q[0], q[1], 46, 60 + i * 5, T.icon === "fire" || T.icon === "lion" ? t : 0); });
+    ORDER.forEach(function (k, i) {
+      var at = 21.8 + i * 0.5; if (t < at) return; var T = UI.towns[k], q = P(T.lat, T.lng), s = pop(t, at, 0.3);
+      c.save(); c.translate(q[0] + 6, q[1] - 14); c.scale(s, s); D.flagpin(c, 0, 0, 70, t, i + 1); c.restore();
+      D.hand(c, T.name, q[0] + (T.dx || 0) * 1.6, q[1] + 34, 34, RED, T.al || "center", "#fbf2d9");
+    });
+    c.restore();
+    cap("10–18 ต.ค. 2569", "10–18 October 2026", 150, t, 21.6, { size: 110, col: RED, stroke: "#fff8e6", ecol: INK });
+    return;
+  }
+  var shots = [["parade-phuket", 26.5, 1.0, "ขบวนแห่", "processions"], ["firecrackers-2011", 27.5, 1.0, "ประทัด!", "firecrackers!"], ["krabi-sedan", 28.5, 1.0, "แห่เกี้ยว", "the gods ride out"]];
+  if (t < 29.5) {
+    var cur = shots[0]; shots.forEach(function (s) { if (t >= s[1]) cur = s; });
+    c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
+    photo(IMG[cur[0]], t, cur[1], cur[2], 0.2);
+    cap(cur[3], cur[4], 1400, t, cur[1] + 0.05, { size: 130 });
+    credit(CREDIT[cur[0]]);
+    return;
+  }
+  c.fillStyle = "#ffe9b8"; c.fillRect(0, 0, W, H / 2); c.fillStyle = "#d9c08a"; c.fillRect(0, H / 2, W, H / 2);
+  c.save(); c.scale(W / 540, W / 540); c.translate(0, (H * 540 / W - 540) / 2 - 60);
+  D.SCENE.lion(c, 540, 540, t * 1.6);
+  c.restore();
+  cap("เชิดสิงโต!", "lion dance!", 330, t, 29.5, { size: 150, col: RED, stroke: "#fff8e6", ecol: INK });
+}
+function legend(t) {
+  c.fillStyle = "#0b0618"; c.fillRect(0, 0, W, H);
+  var R = rnd(5); for (var i = 0; i < 260; i++) { c.fillStyle = "rgba(255,245,220," + (0.25 + 0.3 * Math.sin(t * 1.5 + i)) + ")"; c.fillRect(R() * W, R() * H, 2, 2); }
+  var S = [[0.80, 0.32], [0.78, 0.44], [0.60, 0.47], [0.56, 0.36], [0.42, 0.39], [0.30, 0.42], [0.16, 0.54]].map(function (p) { return [p[0] * W, p[1] * H]; });
+  var n = clamp(Math.floor((t - 31.4) / 0.25) + 1, 0, 7);
+  c.strokeStyle = "rgba(255,210,31,.85)"; c.lineWidth = 6; c.beginPath();
+  for (var k = 0; k < n; k++) { if (k) c.lineTo(S[k][0], S[k][1]); else c.moveTo(S[k][0], S[k][1]); }
+  if (n === 7) { c.moveTo(S[3][0], S[3][1]); c.lineTo(S[0][0], S[0][1]); }
+  c.stroke();
+  S.forEach(function (p, k) { var on = k < n; c.fillStyle = on ? YEL : "#fff6e0"; c.beginPath(); c.arc(p[0], p[1], on ? 16 : 9, 0, TAU); c.fill(); });
+  if (t >= 33.5) {
+    var e = k01(t, 33.5, 34.0) * (0.75 + 0.25 * Math.sin(t * 6));
+    [[S[5][0] - 30, S[5][1] - 60], [S[6][0] - 70, S[6][1] + 110]].forEach(function (q) {
+      var g = c.createRadialGradient(q[0], q[1], 0, q[0], q[1], 90); g.addColorStop(0, "rgba(255,120,150," + 0.8 * e + ")"); g.addColorStop(1, "rgba(255,120,150,0)");
+      c.fillStyle = g; c.fillRect(q[0] - 90, q[1] - 90, 180, 180); c.fillStyle = "rgba(255,210,220," + e + ")"; c.beginPath(); c.arc(q[0], q[1], 14, 0, TAU); c.fill();
+    });
+  }
+  cap("ดาว 7 ดวง", "7 stars", 300, t, 31.2, { size: 120, col: YEL });
+  cap("+ 2 ดวงที่มองไม่เห็น", "+ 2 nobody can see", 1180, t, 33.5, { size: 92 });
+  cap("= เทพเจ้า 9 องค์", "= the Nine Emperor Gods", 1400, t, 34.3, { size: 104, col: YEL });
+}
+var NB = null;
+function north(t) {
+  if (!NB) {                                       // the doodled old city, drawn once
+    NB = document.createElement("canvas"); NB.width = W; NB.height = H; var b = NB.getContext("2d");
+    D.paper(b, W, H, 4);
+    var P = D.proj([18.765, 98.966, 18.805, 99.013], W, H * 0.8, 1.0), T = REEL.map.city;
+    b.save(); b.translate(0, 180);
+    var pts = function (r) { return r.map(function (p) { return P(p[0], p[1]); }); };
+    T.roads.major.forEach(function (r, i) { D.ink(b, pts(r), { seed: i, w: 6, col: "#d9b98a", a: 0.9, amp: 1 }); });
+    T.water.forEach(function (poly, i) { poly.forEach(function (r, k) { var p = pts(r); D.wash(b, p, "#8fc3e0", 0.85, 200 + i + k); D.ink(b, p, { seed: 200 + i, close: true, w: 2.4, col: "#2f6fa0", a: 0.8 }); }); });
+    UI.landmarks.city.forEach(function (L, i) { var q = P(L.lat, L.lng); D.ICON[L.icon](b, q[0], q[1], 70 * (L.s || 1), 500 + i * 3, 0); D.hand(b, L.name, q[0] + (L.dx || 0) * 2, q[1] + 26 + (L.dy || 0) * 2, 30, "#5a3a1a", L.al || "center", "#fbf2d9"); });
+    b.restore(); NB.P = P;
+  }
+  c.drawImage(NB, 0, 0);
+  var ps = REEL.places.filter(function (p) { return p.prov === "cm"; });
+  c.save(); c.translate(0, 180);
+  ps.forEach(function (p, i) { var at = 37.3 + i * 0.07; if (t < at) return; var q = NB.P(p.lat, p.lng); if (q[1] < -20 || q[1] > H) return; var s = pop(t, at, 0.25); c.save(); c.translate(q[0], q[1]); c.scale(2.2 * s, 2.2 * s); D.pin(c, 0, 0, p.k, i * 3 + 1, false); c.restore(); });
+  c.restore();
+  cap("เชียงใหม่ เชียงราย", "Chiang Mai · Chiang Rai", 190, t, 37.1, { size: 110, col: RED, stroke: "#fff8e6", ecol: INK });
+  cap("ศาลเจ้า + ร้านเจ 60 ที่", "60 shrines & jay kitchens, mapped", 1460, t, 38.6, { size: 96, col: INK, stroke: "#fff8e6", ecol: RED });
+}
+function end(t) {
+  bgRed();
+  bunting(t, 140, 70, 9, 96); bunting(t, 360, 80, 11, 78); bunting(t, 1500, 70, 9, 96); bunting(t, 1700, 60, 11, 78);
+  cap("กินเจ", "Kin Jay", 760, t, 41.6, { size: 260, col: YEL });
+  cap("10–18 ต.ค. 2569", "10–18 October 2026", 1150, t, 42.2, { size: 100 });
+  cap("motdang.net/sites/kin-jay", "", 1390, t, 42.8, { size: 62, col: YEL });
+}
+
+window.stage = {
+  build: function () { return 45; },
+  render: function (t) {
+    var sh = shake(t);
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
+    c.save(); c.translate(sh[0], sh[1]);
+    for (var i = 0; i < SEC.length; i++) if (t >= SEC[i][0] && t < SEC[i][1]) { SEC[i][2](t); break; }
+    if (t >= 45) end(t);
+    c.restore();
+    // a white flash on each cut
+    SEC.forEach(function (s) { var d = t - s[0]; if (s[0] > 0 && d >= 0 && d < 0.12) { c.fillStyle = "rgba(255,255,255," + (0.5 * (1 - d / 0.12)) + ")"; c.fillRect(0, 0, W, H); } });
+  }
+};
+Promise.all([document.fonts.ready, document.fonts.load("900 40px 'Noto Sans Thai'", "กินเจ"), document.fonts.load("40px Sriracha", "เชียงใหม่"), document.fonts.load("900 40px 'Noto Serif TC'", "齋")].concat(
+  Object.keys(IMG).map(function (k) { return new Promise(function (r) { if (IMG[k].complete) r(); else { IMG[k].onload = r; IMG[k].onerror = r; } }); })
+)).then(function () { window.READY = true; stage.render(0); });
+})();
+</script></body></html>

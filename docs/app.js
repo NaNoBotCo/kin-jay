@@ -69,6 +69,8 @@
     c.restore();
   }
 
+  window.JAYKIT = { pennant: pennant, banner: banner, letter: letter, je: je };   // the reel draws with these
+
   /* ---------- hero: a street strung with jay flags ---------- */
   (function hero() {
     var cv = $("scene"); if (!cv) return;

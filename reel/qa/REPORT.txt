@@ -1,0 +1,5 @@
+1. Audio (00:28): The firecracker audio hits at ~29.8s, which is out of sync with the visual cut "ประทัด! firecrackers!" at 00:28.
+2. Picture (00:12, 00:20-00:21): "ไม่เจ! NOT JAY" at 00:12 is too low and will overlap with the phone's UI. Additionally, the three dishes at 00:20-00:21 appear too briefly to read.
+3. Thai (00:14): "ผักฉุน 5 อย่าง ออก!" reads unnaturally. A better wording is "งดผักฉุน 5 ชนิด" (or "ไม่ใส่ผักฉุน 5 อย่าง").
+4. Pace (00:31-00:34): Drawing the 7 stars takes 3 full seconds, which stalls the energy. It would be more fun to speed the drawing up to 1 second and add a dynamic glow or flash.
+5. One line (00:00-00:02): A scroller probably wouldn't stop because the opening visuals (static text and flags on a gradient) are too plain and lack immediate action or a human face.
