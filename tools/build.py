@@ -25,7 +25,7 @@ E = html.escape
 CSS = open(os.path.join(HERE, "site.css")).read()
 GOOGLE_ESCAPE = '<script>if(/[.]translate[.]goog$/.test(location.hostname))location.replace("https://"+location.hostname.slice(0,-15).replace(/--/g,"~").replace(/-/g,".").replace(/~/g,"-")+location.pathname+location.search.replace(/([?&])_x_tr_[^&]*/g,"$1").replace(/[?]&+/,"?").replace(/[?&]+$/,"")+location.hash)</script>'
 FONTS = ("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700"
-         "&family=Noto+Sans+Thai:wght@400;600;700&family=Noto+Serif+Thai:wght@600;700&display=swap")
+         "&family=Noto+Sans+Thai:wght@400;600;700&family=Noto+Serif+Thai:wght@600;700&family=Sriracha&display=swap")
 GLYPHS = "https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@900&display=swap&text="
 
 
@@ -54,7 +54,7 @@ def page(lang, md=False):
     url = CANON if lang == "en" else CANON + "th/"
     other = (MD_ROOT + ("th/" if lang == "en" else "")) if md else ("th/" if lang == "en" else "../")
     js = {k: u[k] for k in u if k.startswith(("now_", "day_", "g_l", "wok_", "map_", "dip_", "tofu_"))}
-    js.update(lang=lang, days=u["days"], foods=[[f[0], f[1], f[2], f[3]] for f in u["foods"]])
+    js.update(lang=lang, days=u["days"], dayplan=u["dayplan"], towns=u["towns"], seas=u["seas"], landmarks=u["landmarks"], mapnotes=u["mapnotes"], foods=[[f[0], f[1], f[2], f[3]] for f in u["foods"]])
     js["places"] = [{"th": p["th"], "en": p["en"] or p["th"], "ro": p["roman"], "lat": p["lat"], "lng": p["lng"], "prov": p["prov"], "k": p["k"],
                      "url": p["url"], "note_th": p["note_th"], "note_en": p["note_en"]} for p in P]
     def figs(sec):
@@ -103,20 +103,22 @@ def page(lang, md=False):
 '''
     btns = "".join(f'<button class="pill" type="button">{i + 1}</button>' for i in range(9))
     dates = "".join(f'<div><b>{E(a)}</b><span>{b}</span></div>' for a, b in u["dates"])
-    days = f'''<section id="days" class="sec dark"><div class="in"><p class="kick">{E(u["days_kick"])}</p><h2>{E(u["days_h"])}</h2>{paras(u["days_p"])}
+    days = f'''<section id="days" class="sec dark"><div class="in"><h2>{E(u["days_h"])}</h2>{paras(u["days_p"])}
 <canvas id="lampcv" role="img" aria-label="{E(u["lamps_alt"])}"></canvas>
 <div id="lampbtns" class="btns" role="group" aria-label="{E(u["days_h"])}">{btns}</div>
-<div class="lampbox" aria-live="polite"><b id="lampday"></b><p id="lamptext"></p></div>
+<div class="daygrid"><canvas id="thcv" data-map="{root}map.json" role="img" aria-label="{E(u["thmap_alt"])}"></canvas>
+<div><canvas id="scenecv" role="img" aria-label="{E(u["scene_alt"])}"></canvas>
+<div class="lampbox" aria-live="polite"><b id="lampday"></b><p id="lamptext"></p></div></div></div>
 <div class="dates">{dates}</div></div></section>
 '''
     ff = "".join(f'<div><b>{E(a)}</b>{b}</div>' for a, b in u["flag_facts"])
-    flag = f'''<section id="flag" class="sec"><div class="in"><p class="kick">{E(u["flag_kick"])}</p><h2>{u["flag_h"]}</h2>{paras(u["flag_p"])}{figs("flag")}
+    flag = f'''<section id="flag" class="sec"><div class="in"><h2>{u["flag_h"]}</h2>{paras(u["flag_p"])}{figs("flag")}
 <canvas id="glyphcv" role="img" aria-label="{E(u["glyph_alt"])}"></canvas><p class="note">{E(u["glyph_hint"])}</p>
 <div class="flagfacts">{ff}</div></div></section>
 '''
     chips = "".join(f'<button class="chip" type="button" data-i="{i}" aria-pressed="false"><i style="background:{f[1]}"></i>{E(f[0])}</button>' for i, f in enumerate(u["foods"]))
     rules = "".join(f'<div><b>{E(a)}</b>{b}</div>' for a, b in u["rules"])
-    plate = f'''<section id="rules" class="sec gold"><div class="in"><p class="kick">{E(u["rules_kick"])}</p><h2>{E(u["rules_h"])}</h2>{paras(u["rules_p"])}
+    plate = f'''<section id="rules" class="sec gold"><div class="in"><h2>{E(u["rules_h"])}</h2>{paras(u["rules_p"])}
 <div class="two"><div><canvas id="wokcv" role="img" aria-label="{E(u["wok_alt"])}"></canvas></div>
 <div><p><b>{E(u["wok_h"])}</b></p><div id="chips">{chips}</div><div class="btns"><button id="wokclear" class="pill" type="button">{E(u["wok_clear"])}</button></div>
 <div id="wokout" class="wokout" aria-live="polite"></div></div></div>
@@ -128,7 +130,7 @@ def page(lang, md=False):
         f'<div class="dish" data-k="{d["k"]}"><span class="steam" aria-hidden="true"><span></span><span></span><span></span></span>'
         f'<b>{E(d["name"])}{(" <span class=zh lang=zh-Hant>" + E(d["zh"]) + "</span>") if d.get("zh") else ""}</b><i>{E(d["gloss"])}</i><p>{E(d["what"])}</p></div>'
         for d in u["dishes"])
-    menu = f'''<section id="menu" class="sec"><div class="in"><p class="kick">{E(u["menu_kick"])}</p><h2>{E(u["menu_h"])}</h2>{paras(u["menu_p"])}{figs("menu")}
+    menu = f'''<section id="menu" class="sec"><div class="in"><h2>{E(u["menu_h"])}</h2>{paras(u["menu_p"])}{figs("menu")}
 <div id="menuseg" class="seg" role="group" aria-label="{E(u["menu_h"])}">{seg}</div><div id="dishes" class="dishes">{dishes}</div><p class="note">{u["menu_note"]}</p></div></section>
 '''
 
@@ -147,11 +149,11 @@ def page(lang, md=False):
         return "".join(f'<li>{pname(p)}<small>{E(p["note_" + lang])}</small></li>' for p in rows)
     mseg = "".join(f'<button class="pill" type="button" data-v="{v}" aria-pressed="{"true" if v == "city" else "false"}">{E(t)}</button>' for v, t in u["map_views"])
     evn = "".join(f'<div><b>{E(e["name"])}</b><span>{E(e["when"])} · {E(e["where"])}</span><p>{E(e["what"])}</p><a class="src" href="{E(e["src"])}">{E(u["src_word"])}</a></div>' for e in u["north_events"])
-    north = f'''<section id="north" class="sec"><div class="in"><p class="kick">{E(u["north_kick"])}</p><h2>{E(u["north_h"])}</h2>{paras(u["north_p"])}
+    north = f'''<section id="north" class="sec"><div class="in"><h2>{E(u["north_h"])}</h2>{paras(u["north_p"])}
 <div class="ev">{evn}</div>
 <h3 style="margin-top:32px">{E(u["map_h"])}</h3>
 <div id="mapseg" class="seg" role="group" aria-label="{E(u["map_h"])}">{mseg}</div>
-<canvas id="mapcv" data-map="{root}map.json" role="img" aria-label="{E(u["map_alt"])}"></canvas>
+<canvas id="mapcv" role="img" aria-label="{E(u["map_alt"])}"></canvas>
 <p class="legend"><span><i style="background:#c8102e"></i>{E(u["map_hall"])}</span><span><i style="background:#e08a00"></i>{E(u["map_kitchen"])}</span><span><i style="background:#2f6f8f"></i>{E(u["map_other"])}</span></p>
 <div id="mapinfo" class="mapinfo" aria-live="polite">{E(u["map_hint"])}</div>
 <div class="cols"><div><h3>{E(u["cm_halls"])}</h3><ul class="plist">{plist("cm", "hall")}</ul><h3 style="margin-top:20px">{E(u["cm_other"])}</h3><ul class="plist">{plist("cm", "other")}</ul></div>
@@ -160,14 +162,14 @@ def page(lang, md=False):
 <p class="note">{u["north_note"]}</p></div></section>
 '''
     evt = "".join(f'<div><b>{E(e["name"])}</b><span>{E(e["when"])}</span><p>{E(e["what"])}</p><a class="src" href="{E(e["src"])}">{E(u["src_word"])}</a></div>' for e in u["thai_events"])
-    thai = f'''<section id="thailand" class="sec dark"><div class="in"><p class="kick">{E(u["thai_kick"])}</p><h2>{E(u["thai_h"])}</h2>{paras(u["thai_p"])}{figs("thailand")}<div class="ev">{evt}</div></div></section>
+    thai = f'''<section id="thailand" class="sec dark"><div class="in"><h2>{E(u["thai_h"])}</h2>{paras(u["thai_p"])}{figs("thailand")}<div class="ev">{evt}</div></div></section>
 '''
     grp = "".join(f'<div><b>{E(g["name"])}</b><i>{E(g["who"])}</i><p>{E(g["what"])}</p><a class="src" href="{E(g["src"])}">{E(u["src_word"])}</a></div>' for g in u["groups"])
-    groups = f'''<section id="groups" class="sec"><div class="in"><p class="kick">{E(u["groups_kick"])}</p><h2>{E(u["groups_h"])}</h2>{paras(u["groups_p"])}<div class="groups">{grp}</div></div></section>
+    groups = f'''<section id="groups" class="sec"><div class="in"><h2>{E(u["groups_h"])}</h2>{paras(u["groups_p"])}<div class="groups">{grp}</div></div></section>
 '''
     tales = "".join(f'<div class="tale"><b>{E(t["name"])}</b><small>{E(t["kind"])}</small>{paras(t["p"])}<a class="src" href="{E(t["src"])}">{E(u["src_word"])}</a></div>' for t in u["tales"])
     tbtn = "".join(f'<button class="pill" type="button">{E(s)}</button>' for s in u["tofu_names"])
-    legends = f'''<section id="legends" class="sec dark"><div class="in"><p class="kick">{E(u["leg_kick"])}</p><h2>{E(u["leg_h"])}</h2>{paras(u["leg_p"])}
+    legends = f'''<section id="legends" class="sec dark"><div class="in"><h2>{E(u["leg_h"])}</h2>{paras(u["leg_p"])}
 <div class="two" style="margin-top:20px"><div><canvas id="dipcv" role="img" aria-label="{E(u["dip_alt"])}"></canvas></div>
 <div><h3>{E(u["dip_h"])}</h3>{paras(u["dip_p"])}<p id="diptext" class="diptext" aria-live="polite"></p><div class="btns"><button id="dipgo" class="pill" type="button">{E(u["dip_go"])}</button></div></div></div>
 <div class="tales">{tales}</div>
@@ -185,7 +187,7 @@ def page(lang, md=False):
 '''
     tail = f'''<footer class="bot"><div class="in">{E(u["foot"])} · <a href="https://github.com/NaNoBotCo/{SLUG}">GitHub</a> · <a href="{md_link}">motdang.net</a> · <a href="https://nanobotco.github.io/">nanobotco</a></div></footer>
 <script>window.UI={json.dumps(js, ensure_ascii=False)};</script>
-<script src="{root}app.js"></script><script src="{root}top.js"></script>
+<script src="{root}app.js"></script><script src="{root}doodle.js"></script><script src="{root}top.js"></script>
 </body></html>
 '''
     return head + "<main>" + hero + days + flag + plate + menu + north + thai + groups + legends + wd + so + "</main>" + tail

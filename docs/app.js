@@ -190,6 +190,7 @@
     function show() {
       var d = U.days[sel]; $("lampday").textContent = U.day_dates_long[sel];
       $("lamptext").innerHTML = d[1];
+      window.JAYDAY = sel; document.dispatchEvent(new CustomEvent("jayday", { detail: sel }));
       document.querySelectorAll("#lampbtns .pill").forEach(function (b, i) { b.setAttribute("aria-pressed", i === sel ? "true" : "false"); });
     }
     build(); var kick = loop(cv, draw);
@@ -305,88 +306,6 @@
       seg.querySelectorAll("button").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
       document.querySelectorAll("#dishes .dish").forEach(function (d) { d.hidden = k !== "all" && d.dataset.k !== k; });
     });
-  })();
-
-  /* ---------- the map of halls and kitchens ---------- */
-  (function map() {
-    var cv = $("mapcv"); if (!cv || !U.places) return;
-    var S, M = null, view = "city", hits = [], pick = -1, info = $("mapinfo");
-    var VIEWS = {
-      cm: { prov: "cm", bbox: [17.2, 97.3, 20.2, 99.6] },
-      cr: { prov: "cr", bbox: [19.0, 99.2, 20.5, 100.7] },
-      city: { prov: "cm", bbox: [18.755, 98.955, 18.815, 99.025] },
-      crtown: { prov: "cr", bbox: [19.875, 99.795, 19.935, 99.865] }
-    };
-    var COL = { hall: RED, kitchen: "#e08a00", other: "#2f6f8f" };
-    function build() { S = fit(cv, function (w) { return Math.min(560, Math.max(340, w * 0.8)); }); }
-    function proj(V) {
-      var b = V.bbox, S0 = b[0], W = b[1], N = b[2], E = b[3], kx = Math.cos((S0 + N) / 2 * Math.PI / 180);
-      var sx = S.w / ((E - W) * kx), sy = S.h / (N - S0), s = Math.min(sx, sy) * 0.94;
-      var ox = (S.w - (E - W) * kx * s) / 2, oy = (S.h - (N - S0) * s) / 2;
-      return function (la, ln) { return [ox + (ln - W) * kx * s, oy + (N - la) * s]; };
-    }
-    function draw() {
-      var c = S.c, w = S.w, h = S.h, V = VIEWS[view], P = proj(V);
-      c.fillStyle = "#fbf1d6"; c.fillRect(0, 0, w, h);
-      if (M) {
-        if (view === "city") {
-          c.fillStyle = "#9cc9e6";
-          M.city.water.forEach(function (poly) {
-            c.beginPath();
-            poly.forEach(function (r) { r.forEach(function (p, i) { var q = P(p[0], p[1]); if (i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]); }); c.closePath(); });
-            c.fill("evenodd");
-          });
-          c.fillStyle = "#5f7f95"; c.font = "italic 13px system-ui,sans-serif"; c.textAlign = "left";
-          var q = P(18.79, 99.004); c.fillText(U.map_ping, q[0] + 4, q[1]);
-        } else {
-          M.amphoe[V.prov].forEach(function (a) {
-            a.rings.forEach(function (r) {
-              c.beginPath(); r.forEach(function (p, i) { var q = P(p[0], p[1]); if (i) c.lineTo(q[0], q[1]); else c.moveTo(q[0], q[1]); }); c.closePath();
-              c.fillStyle = "#f3e2b4"; c.fill(); c.strokeStyle = "#d1b47a"; c.lineWidth = 0.8; c.stroke();
-            });
-          });
-        }
-      }
-      hits = [];
-      U.places.forEach(function (p, i) {
-        if (p.prov !== V.prov || p.lat == null) return;
-        var q = P(p.lat, p.lng);
-        if (q[0] < -10 || q[0] > w + 10 || q[1] < -10 || q[1] > h + 10) return;
-        var r = i === pick ? 9 : 6;
-        c.fillStyle = COL[p.k] || COL.other; c.beginPath(); c.arc(q[0], q[1], r, 0, TAU); c.fill();
-        c.strokeStyle = "#fff"; c.lineWidth = 2; c.stroke();
-        hits.push([q[0], q[1], i]);
-      });
-      if (pick >= 0) {
-        var p = U.places[pick];
-        if (p.prov === V.prov) { var qq = P(p.lat, p.lng); c.fillStyle = INK; c.font = "700 13px system-ui,sans-serif"; c.textAlign = qq[0] > w * 0.6 ? "right" : "left"; c.fillText(TH ? p.th : p.en, qq[0] + (qq[0] > w * 0.6 ? -12 : 12), qq[1] - 10); }
-      }
-      c.fillStyle = "rgba(42,18,6,.55)"; c.font = "11px system-ui,sans-serif"; c.textAlign = "right";
-      c.fillText(view === "city" ? "© OpenStreetMap contributors" : "OCHA COD-AB · RTSD", w - 8, h - 8);
-    }
-    function show(i) {
-      pick = i; var p = U.places[i];
-      var first = TH ? p.th : p.en, second = TH ? (p.en !== p.th ? p.en : p.ro) : (p.en !== p.th ? p.th : p.ro);
-      info.innerHTML = '<b>' + esc(first) + '</b>' + (second ? ' <span class="roman">' + esc(second) + '</span>' : "") +
-        '<br><span>' + esc(TH ? p.note_th : p.note_en) + '</span><br><a href="' + esc(p.url) + '">' + esc(U.map_open) + '</a>';
-      draw();
-    }
-    build();
-    var x = new XMLHttpRequest(); x.open("GET", cv.dataset.map); x.onload = function () { try { M = JSON.parse(x.responseText); } catch (e) { } draw(); }; x.send();
-    cv.addEventListener("click", function (e) {
-      var r = cv.getBoundingClientRect(), mx = e.clientX - r.left, my = e.clientY - r.top, best = -1, bd = 22 * 22;
-      hits.forEach(function (hh) { var d = (hh[0] - mx) * (hh[0] - mx) + (hh[1] - my) * (hh[1] - my); if (d < bd) { bd = d; best = hh[2]; } });
-      if (best >= 0) show(best);
-    });
-    document.querySelectorAll("#mapseg .pill").forEach(function (b) {
-      b.addEventListener("click", function () {
-        view = b.dataset.v; pick = -1; info.innerHTML = U.map_hint;
-        document.querySelectorAll("#mapseg .pill").forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
-        draw();
-      });
-    });
-    addEventListener("resize", function () { build(); draw(); });
-    draw();
   })();
 
   /* ---------- the Dipper: seven stars and two more ---------- */
