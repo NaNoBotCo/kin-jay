@@ -1,0 +1,387 @@
+[
+ {
+  "id": "cm-ovt-e8a26868-615d-4c5a-8bb8-fafeb7352c5f",
+  "k": "hall",
+  "th": "มูลนิธิกวนอิมธรรมทาน 觀音堂",
+  "en": "Guan Im Dhamma Dan Foundation (Kuan Im Tueng)",
+  "note_th": "โรงเจมหายาน ถนนเมืองสมุทร ประกาศงานถือศีลกินเจ 9–18 ต.ค. 2569 พระสงฆ์จีนจากวัดหมื่นพุทธเมตตาคุณาราม เชียงราย นำสวด ขอให้ใส่ชุดขาวเข้าพิธี โทร 053-235-968 (เชียงใหม่นิวส์ 25 ก.ย. 2569)",
+  "note_en": "The Mahayana jay hall on Mueang Samut Road. Festival 9–18 Oct 2026; Chinese monks from Wat Muen Puttha Mettakhunaram, Chiang Rai, lead the chanting; white clothes for the rites. 053-235-968 (Chiang Mai News, 25 Sep 2026)"
+ },
+ {
+  "id": "cm-osm-way-255987533",
+  "k": "hall",
+  "th": "ศาลเจ้าปุงเถ่ากง 清邁老本頭古廟",
+  "en": "Pung Tao Kong Shrine",
+  "note_th": "ศาลเจ้าจีนเก่าแก่ที่สุดของเชียงใหม่ ริมน้ำปิงย่านกาดหลวง ปี 2568 แจกอาหารเจฟรีครบเก้าวัน 11.00–12.00 และ 16.00–17.00 น. ปี 2569 ยังไม่เห็นประกาศ",
+  "note_en": "Chiang Mai's oldest Chinese shrine, on the Ping by Warorot. In 2025 it gave free jay meals all nine days, 11:00–12:00 and 16:00–17:00; no 2026 notice seen yet"
+ },
+ {
+  "id": "cm-ovt-d7623bbd-fb9e-4af9-a349-76fb98d37da4",
+  "k": "hall",
+  "th": "โรงเจเทียนฮกตึ๊ง 天福堂",
+  "en": "Thian Hok Tueng jay hall",
+  "note_th": "สมาคมพุทธภาวนาบุญสถาน ถนนเมืองสมุทร หนึ่งในโรงเจสี่แห่งของอำเภอเมืองเชียงใหม่ที่นับไว้ในงานวิจัยปี 2566",
+  "note_en": "Phutthaphawana Bunsathan Association, Mueang Samut Road; one of four jay halls in Mueang Chiang Mai counted by a 2023 survey"
+ },
+ {
+  "id": "cm-curated-funeral-2013",
+  "k": "hall",
+  "th": "ศาลเจ้าไต่ฮงกง มูลนิธิเชียงใหม่สามัคคีการกุศล 清邁修德善堂",
+  "en": "Tai Hong Kong Shrine, Chiang Mai Samakkhi Charity Foundation",
+  "note_th": "ตั้งปี 2500 ถนนลอยเคราะห์ ช้างคลาน มูลนิธิบริจาคโลงศพ",
+  "note_en": "Founded 1957, Loi Kroh Road, Chang Khlan; the foundation gives coffins"
+ },
+ {
+  "id": "cm-osm-way-444895675",
+  "k": "hall",
+  "th": "ศาลเจ้าแม่ทับทิม 水尾聖娘廟",
+  "en": "Mae Thap Thim Shrine",
+  "note_th": "ศาลเจ้าแม่ทับทิม ช้างคลาน ริมน้ำปิง",
+  "note_en": "The Shui Wei Sheng Niang shrine, Chang Khlan, by the Ping"
+ },
+ {
+  "id": "cm-osm-way-38487629",
+  "k": "hall",
+  "th": "ตำหนักพระแม่กวนอิม เชียงใหม่",
+  "en": "Kuan Imm Palace",
+  "note_th": "ศาลพระแม่กวนอิม ใต้เมืองเก่า",
+  "note_en": "A Guanyin shrine south of the old city"
+ },
+ {
+  "id": "cm-ovt-2604bdeb-dbb3-47bf-a3fa-aaa551da7076",
+  "k": "hall",
+  "note_th": "โรงเจและศาลเจ้าแม่กวนอิม อำเภอหางดง",
+  "note_en": "A jay hall and Guanyin shrine in Hang Dong"
+ },
+ {
+  "id": "cm-osm-way-647614963",
+  "k": "hall",
+  "note_th": "ศาลเจ้าแม่ทับทิม หนองหาร สันทราย",
+  "note_en": "A Mae Thap Thim shrine at Nong Han, San Sai"
+ },
+ {
+  "id": "cm-ovt-bad790cd-980b-40d8-8629-f297b3496d01",
+  "k": "hall",
+  "note_th": "สถานธรรม บ้านห้วยเหยิน อำเภอฝาง",
+  "note_en": "A dharma hall at Huai Yoen, Fang"
+ },
+ {
+  "id": "cm-ovt-c2b82d8e-fcd9-4165-b9ee-025e833f58df",
+  "k": "hall",
+  "note_th": "ศาลเจ้าแม่กวนอิม อำเภอฝาง",
+  "note_en": "A Guanyin shrine in Fang"
+ },
+ {
+  "id": "cm-ovt-6d4db27c-8cdd-4db4-ba14-3efffd9f924f",
+  "k": "hall",
+  "note_th": "สถานธรรมพระโพธิสัตว์เจ้าแม่กวนอิม บ้านปง อำเภอไชยปราการ",
+  "note_en": "A Guanyin dharma hall at Ban Pong, Chai Prakan"
+ },
+ {
+  "id": "cm-ovt-9a2ad576-a994-4580-ad3b-a640596b2478",
+  "k": "kitchen",
+  "note_th": "ร้านเจในตลาดวโรรส (กาดหลวง) ถนนข่วงเมรุ",
+  "note_en": "A jay shop inside Warorot market (Kad Luang), Khuang Men Road"
+ },
+ {
+  "id": "cm-osm-node-3312188606",
+  "k": "kitchen",
+  "note_th": "ร้านอาหารเจ เปิดทุกวัน 05.00–14.00 น. ตาม OpenStreetMap",
+  "note_en": "Jay restaurant, daily 05:00–14:00 per OpenStreetMap"
+ },
+ {
+  "id": "cm-osm-node-4182515040",
+  "k": "kitchen",
+  "th": "ชมรมมังสวิรัติเชียงใหม่ (ชมร.)",
+  "en": "Chiang Mai Vegetarian Society",
+  "note_th": "ถนนมหิดล เปิดวันจันทร์–ศุกร์ ช่วงเช้าถึงบ่ายสอง ช่วงเทศกาลเลี้ยงฟรีรับบริจาค (Wongnai)",
+  "note_en": "Mahidol Road, Mon–Fri mornings to 14:00; free meals with donations in festival periods (Wongnai)"
+ },
+ {
+  "id": "cm-ovt-4fa29f30-a39c-4a65-b52b-92ab3ab6232d",
+  "k": "kitchen",
+  "note_th": "ร้านอาหารมังสวิรัติและเจ 77 ถนนมหิดล",
+  "note_en": "Vegetarian and jay food, 77 Mahidol Road"
+ },
+ {
+  "id": "cm-osm-node-6200926187",
+  "k": "kitchen",
+  "th": "เจี่ยท้งเฮง",
+  "note_th": "อาหารจีนเจ ถนนศรีดอนไชย ช้างคลาน",
+  "note_en": "Chinese vegetarian, Si Donchai Road, Chang Khlan",
+  "en": "Jia Tong Heng"
+ },
+ {
+  "id": "cm-osm-node-3283614977",
+  "k": "kitchen",
+  "note_th": "อาหารเจ ก๋วยเตี๋ยว ข้าวราดแกง ถนนหัสดิเสวี",
+  "note_en": "Jay noodles and curry over rice, Hussadisawee Road"
+ },
+ {
+  "id": "cm-osm-way-442372056",
+  "k": "kitchen",
+  "note_th": "อาหารเจแบบจีนและไทย ถนนโทรคมนาคม ย่านเจ็ดยอด",
+  "note_en": "Chinese-style vegetarian and Thai, Thorakhamanakhom Road, Chet Yot"
+ },
+ {
+  "id": "cm-osm-node-9872196817",
+  "k": "kitchen",
+  "th": "เจ มิ่งขวัญ",
+  "note_th": "ข้าวซอยเจ ก๋วยเตี๋ยว ถนนสุเทพ (เชียงใหม่นิวส์ 2567)",
+  "note_en": "Jay khao soi and noodles, Suthep Road (Chiang Mai News, 2024)"
+ },
+ {
+  "id": "cm-osm-node-4430745091",
+  "k": "kitchen",
+  "note_th": "อาหารเหนือวีแกน 10.00–21.00 น.",
+  "note_en": "Northern vegan food, 10:00–21:00"
+ },
+ {
+  "id": "cm-osm-node-6249725792",
+  "k": "kitchen",
+  "th": "หยกอาหารเจ",
+  "note_th": "ถนนนันทาราม หายยา ข้าวราดแกง ก๋วยเตี๋ยว ข้าวมันไก่เจ",
+  "note_en": "Nantaram Road, Hai Ya: curry over rice, noodles, mock-chicken rice"
+ },
+ {
+  "id": "cm-osm-node-11161006605",
+  "k": "kitchen",
+  "note_th": "170 ถนนเชียงใหม่–ลำพูน เปิด 08.00–17.00 น.",
+  "note_en": "170 Chiang Mai–Lamphun Road, 08:00–17:00"
+ },
+ {
+  "id": "cm-osm-node-5027579121",
+  "k": "kitchen",
+  "note_th": "ร้านเจ ถนนมณีนพรัตน์",
+  "note_en": "Jay restaurant, Manee Nopparat Road"
+ },
+ {
+  "id": "cm-osm-node-8448483117",
+  "k": "kitchen",
+  "note_th": "อาหารเจจีนและศาล ซอย 3 ถนนแก้วนวรัฐ จันทร์–เสาร์ 09.00–18.00 น.",
+  "note_en": "Chinese vegetarian food and a shrine, Kaew Nawarat Soi 3, Mon–Sat 09:00–18:00"
+ },
+ {
+  "id": "cm-osm-node-5201209728",
+  "k": "kitchen",
+  "note_th": "ร้านเจ ซอย 3 ถนนเกาะกลาง หนองหอย",
+  "note_en": "Jay shop, Ko Klang Soi 3, Nong Hoi"
+ },
+ {
+  "id": "cm-osm-node-6849028485",
+  "k": "kitchen",
+  "note_th": "วีแกน ซอยวัดอุโมงค์ 08.30–18.00 น. ปิดวันพุธ",
+  "note_en": "Vegan, Soi Wat Umong, 08:30–18:00, closed Wednesday"
+ },
+ {
+  "id": "cm-osm-way-623140246",
+  "k": "kitchen",
+  "note_th": "มังสวิรัติและวีแกน ถนนสิงหราช ซอย 3",
+  "note_en": "Vegetarian and vegan, Singharat Soi 3"
+ },
+ {
+  "id": "cm-osm-way-492846789",
+  "k": "kitchen",
+  "note_th": "พิซซ่าและพาสต้าวีแกน",
+  "note_en": "Vegan pizza and pasta"
+ },
+ {
+  "id": "cm-osm-node-4529653891",
+  "k": "kitchen",
+  "note_th": "ร้านอาหารวีแกนและโรงเรียนสอนทำอาหารวีแกน",
+  "note_en": "Vegan restaurant and vegan cooking school"
+ },
+ {
+  "id": "cm-ovt-1e1e6a9c-f447-47f8-9deb-bf4473863494",
+  "k": "kitchen",
+  "note_th": "ร้านอาหารเจ ย่านฟ้าฮ่าม",
+  "note_en": "Jay restaurant, Fa Ham"
+ },
+ {
+  "id": "cm-ovt-0f4b1a77-cb8f-4084-9127-c2f538a66aca",
+  "k": "kitchen",
+  "note_th": "อาหารเจ ตำบลต้นเปา สันกำแพง",
+  "note_en": "Jay food, Ton Pao, San Kamphaeng"
+ },
+ {
+  "id": "cm-ovt-520cace1-becc-478b-8ad8-86c9c66adaf5",
+  "k": "kitchen",
+  "note_th": "อาหารเจ หนองหาร สันทราย",
+  "note_en": "Jay food, Nong Han, San Sai"
+ },
+ {
+  "id": "cm-ovt-045dd3f6-3c08-43da-ac97-ecac78c0bea8",
+  "k": "kitchen",
+  "note_th": "ร้านเจ ช่อแล แม่แตง",
+  "note_en": "Jay shop, Cho Lae, Mae Taeng"
+ },
+ {
+  "id": "cm-osm-way-89039067",
+  "k": "other",
+  "note_th": "ตลาดวโรรส ปี 2568 ธงเหลืองขึ้นทั่วตลาด แผงเจทำกับข้าวราว 20 อย่างต่อวัน กล่องละ 35–40 บาท",
+  "note_en": "Warorot market. In 2025 yellow flags went up across it; one jay stall cooked about 20 dishes a day at 35–40 baht a box"
+ },
+ {
+  "id": "cm-osm-way-254011801",
+  "k": "other",
+  "note_th": "เซ็นทรัล เชียงใหม่ ห้างที่มีชื่อในงาน Thailand J Food Festival 2026 วันที่ 9–18 ต.ค.",
+  "note_en": "Central Chiang Mai, one of the malls named for Thailand J Food Festival 2026, 9–18 Oct"
+ },
+ {
+  "id": "cm-osm-way-87710118",
+  "k": "other",
+  "note_th": "เซ็นทรัล เชียงใหม่ แอร์พอร์ต ห้างที่มีชื่อในงาน Thailand J Food Festival 2026 วันที่ 9–18 ต.ค.",
+  "note_en": "Central Chiang Mai Airport, one of the malls named for Thailand J Food Festival 2026, 9–18 Oct"
+ },
+ {
+  "id": "cm-ovt-f6d1a99c-388f-4e0e-a298-a190a4317e6b",
+  "k": "other",
+  "note_th": "คุรุดวาราของซิกข์นิกายนามธารี ถนนช้างม่อย",
+  "note_en": "The Namdhari Sikh gurdwara, Chang Moi Road"
+ },
+ {
+  "id": "cm-osm-way-793933943",
+  "k": "other",
+  "note_th": "เทวสถานพระพิฆเนศ ถนนเจริญประเทศ",
+  "note_en": "The Ganesha Hindu temple, Charoen Prathet Road"
+ },
+ {
+  "id": "cm-ovt-881f03aa-e925-4c2b-b4e0-868a931ff4ac",
+  "k": "other",
+  "note_th": "เทวสถานฮินดู ถนนรัตนโกสินทร์",
+  "note_en": "Hindu temple, Rattanakosin Road"
+ },
+ {
+  "id": "cr-ovt-788cbc26-7fe3-461e-8304-55580f90af97",
+  "k": "hall",
+  "th": "ศาลเจ้า มูลนิธิสาธารณกุศลสงเคราะห์เชียงราย",
+  "note_th": "ศาลเจ้าจีนในเมืองเก่าเชียงราย สร้างเสร็จปี 2504 ปี 2567 รับบริจาคของเจให้คนที่ร่วมเทศกาล",
+  "note_en": "The Chinese shrine of Chiang Rai's old town, finished 1961; in 2024 it took in jay food donated for festival-goers"
+ },
+ {
+  "id": "cr-ovt-79c3b47a-1587-402c-bd00-424409b42912",
+  "k": "hall",
+  "th": "วัดหมื่นพุทธเมตตาคุณาราม",
+  "note_th": "วัดพุทธแบบจีน ท่าข้าวเปลือก แม่จัน พระสงฆ์จีนของวัดนำสวดงานกินเจ 2569 ที่มูลนิธิกวนอิมธรรมทาน เชียงใหม่",
+  "note_en": "A Chinese Buddhist temple at Tha Khao Plueak, Mae Chan; its Chinese monks lead the 2026 jay rites at the Guan Im foundation in Chiang Mai",
+  "en": "Wat Muen Puttha Mettakhunaram"
+ },
+ {
+  "id": "cr-ovt-8a7f4831-7f77-4846-aace-46de14294dda",
+  "k": "hall",
+  "note_th": "ศาลเจ้าสัว 天隆庙 แม่สาย",
+  "note_en": "Chao Sua shrine, 天隆庙, Mae Sai"
+ },
+ {
+  "id": "cr-ovt-8d66c3a4-edd6-4c07-9e59-c3e078593993",
+  "k": "hall",
+  "note_th": "ศาลเจ้าแม่กวนอิม บ้านหนองแว่น แม่จัน",
+  "note_en": "A Guanyin shrine at Ban Nong Waen, Mae Chan"
+ },
+ {
+  "id": "cr-osm-node-2147540194",
+  "k": "hall",
+  "note_th": "โรงเจ อำเภอแม่จัน",
+  "note_en": "A jay hall in Mae Chan"
+ },
+ {
+  "id": "cr-dgth-religious-3800070060",
+  "k": "hall",
+  "note_th": "ศาลเจ้าจี้กง อำเภอพาน",
+  "note_en": "A Ji Gong shrine in Phan"
+ },
+ {
+  "id": "cr-osm-way-551266015",
+  "k": "hall",
+  "note_th": "ศาลเจ้าจีน บ้านถ้ำปลา แม่สาย",
+  "note_en": "A Chinese shrine at Ban Tham Pla, Mae Sai"
+ },
+ {
+  "id": "cr-osm-node-4556487389",
+  "k": "kitchen",
+  "th": "บุญสิตา",
+  "note_th": "ถนนสถานพยาบาล ใกล้โรงพยาบาลเชียงรายประชานุเคราะห์ แกง ผัด ก๋วยเตี๋ยว ข้าวราด ปิดวันเสาร์ (Wongnai)",
+  "note_en": "Sathan Phayaban Road by Chiang Rai Prachanukroh Hospital: curries, stir-fries, noodle soup, rice plates; closed Saturday (Wongnai)"
+ },
+ {
+  "id": "cr-osm-node-2301371485",
+  "k": "kitchen",
+  "note_th": "อาหารเจ เปิดทุกวัน 07.00–19.00 น.",
+  "note_en": "Jay restaurant, daily 07:00–19:00"
+ },
+ {
+  "id": "cr-osm-way-960771490",
+  "k": "kitchen",
+  "note_th": "เจและวีแกน เปิด 06.30–17.00 น.",
+  "note_en": "Jay and vegan, 06:30–17:00"
+ },
+ {
+  "id": "cr-osm-node-2316640505",
+  "k": "kitchen",
+  "th": "พ.รวินเจ",
+  "note_th": "ก๋วยเตี๋ยวน้ำซุปเจ ในเมืองเชียงราย",
+  "note_en": "Jay noodle broth, Chiang Rai town"
+ },
+ {
+  "id": "cr-osm-way-960934970",
+  "k": "kitchen",
+  "note_th": "วีแกน ถนนไตรรัตน์",
+  "note_en": "Vegan, Trairat Road"
+ },
+ {
+  "id": "cr-ovt-c4567ecf-7fda-4ef8-a8c9-1b18494fa4b7",
+  "k": "kitchen",
+  "note_th": "อาหารเจและวีแกนแบบไทย ริมกก (Wongnai)",
+  "note_en": "Thai jay and vegan food, Rim Kok (Wongnai)"
+ },
+ {
+  "id": "cr-ovt-506a87f9-8545-414c-b0f6-2e5fc3263f62",
+  "k": "kitchen",
+  "note_th": "ก๋วยเตี๋ยวเจ สามแยกท่าข้าวเปลือก บ้านเด่น นางแล",
+  "note_en": "Jay noodle soups, Tha Khao Plueak junction, Ban Den, Nang Lae"
+ },
+ {
+  "id": "cr-ovt-d2fb1fc4-75e7-41bf-b1b4-3511f4fd9074",
+  "k": "kitchen",
+  "note_th": "อาหารเจ ถนนไตรรัตน์",
+  "note_en": "Jay food, Trairat Road"
+ },
+ {
+  "id": "cr-osm-node-2294308420",
+  "k": "kitchen",
+  "note_th": "ร้านริมน้ำกก เมนูมังสวิรัติและวีแกนมีเครื่องหมายไว้ เปิด 08.00–21.00 น.",
+  "note_en": "On the Kok river; vegetarian and vegan dishes marked on the menu; 08:00–21:00"
+ },
+ {
+  "id": "cr-osm-node-6290979685",
+  "k": "kitchen",
+  "note_th": "อาหารเจ แม่ฟ้าหลวง เปิด 08.00–20.00 น.",
+  "note_en": "Vegetarian food in Mae Fah Luang, 08:00–20:00"
+ },
+ {
+  "id": "cr-ovt-9b676b5b-379f-42a3-a2f0-c8cb6f42bc2f",
+  "k": "kitchen",
+  "th": "ร้านเหมืองแดงอาหารเจ แม่สาย",
+  "note_th": "อาหารเจ บ้านเหมืองแดง แม่สาย",
+  "note_en": "Jay food at Ban Mueang Daeng, Mae Sai",
+  "en": "Vegetarianfood MuengDang measai"
+ },
+ {
+  "id": "cr-ovt-e6525a3b-8597-4b5f-ba17-8794b3d208b4",
+  "k": "kitchen",
+  "note_th": "อาหารเจ ตำบลเวียง อำเภอเทิง",
+  "note_en": "Jay food, Wiang, Thoeng"
+ },
+ {
+  "id": "cr-osm-node-5782374054",
+  "k": "kitchen",
+  "note_th": "อาหารเจ เทศบาลซอย 3 อำเภอพาน 09.00–18.00 น.",
+  "note_en": "Jay food, Thetsaban Soi 3, Phan, 09:00–18:00"
+ },
+ {
+  "id": "cr-ovt-26cadbf1-9303-4107-809e-6df814c0aef6",
+  "k": "other",
+  "note_th": "คุรุดวาราของซิกข์ ในเมืองเชียงราย",
+  "note_en": "The Sikh gurdwara in Chiang Rai town"
+ }
+]
