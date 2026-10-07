@@ -357,7 +357,7 @@ function festival(t) {
   LIGHT = true; c.fillStyle = "#ffe9b8"; c.fillRect(0, 0, W, H / 2); c.fillStyle = "#d9c08a"; c.fillRect(0, H / 2, W, H / 2);
   rays(W / 2, H / 2, t, "255,170,40", 0.45, 1400, 22);
   c.save(); c.scale(W / 540, W / 540); c.translate(0, (H * 540 / W - 540) / 2 - 60);
-  D.SCENE.lion(c, 540, 540, t * 1.6);
+  D.SCENE.lion(c, 540, 540, t);   // real time, so the jaw snaps on the 120 bpm drum and the leap lands at 30.8 s
   c.restore();
   drawBursts(t);
   cap("เชิดสิงโต!", "lion dance!", 330, t, 29.5, { size: 160, col: RED, stroke: "#fff8e6", ecol: INK });
