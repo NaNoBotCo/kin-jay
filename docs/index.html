@@ -195,6 +195,27 @@ footer.bot a{color:var(--yel)}
 #scenecv{margin-bottom:10px}
 #mapcv{background:#fbf2d9}
 .lampbox p b{display:inline;font-size:inherit;margin-right:.35em}
+/* motion */
+@keyframes rise{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes zhglow{from{text-shadow:0 0 14px rgba(255,190,0,.45),0 2px 18px rgba(0,0,0,.6)}to{text-shadow:0 0 34px rgba(255,200,40,.95),0 0 70px rgba(255,120,0,.5),0 2px 18px rgba(0,0,0,.6)}}
+@keyframes stamp{0%{opacity:0;transform:scale(2.4) rotate(-12deg)}60%{opacity:1;transform:scale(.92) rotate(3deg)}100%{transform:none}}
+@keyframes shimmer{from{background-position:-200% 0}to{background-position:200% 0}}
+.hero-t .kick{animation:rise .6s .1s cubic-bezier(.2,1.2,.4,1) both}
+.hero-t h1{animation:rise .8s .2s cubic-bezier(.2,1.3,.4,1) both}
+.hero-t h1 .zh{display:inline-block;animation:stamp .7s .45s cubic-bezier(.3,1.4,.5,1) both,zhglow 2.4s 1.2s ease-in-out infinite alternate}
+.hero-t .lede{animation:rise .7s .5s ease-out both}
+.hero-t .hint{animation:rise .7s .8s ease-out both}
+.nowbar{background:linear-gradient(100deg,var(--yel) 40%,#fff1a8 50%,var(--yel) 60%) 0 0/200% 100%;animation:shimmer 5s linear infinite}
+.pill,.chip{transition:transform .18s cubic-bezier(.3,1.6,.5,1),background .2s,color .2s,box-shadow .2s}
+.pill:hover,.chip:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(92,10,20,.18)}
+.pill:active,.chip:active{transform:scale(.92)}
+.chip[aria-pressed=true]{animation:stamp .35s cubic-bezier(.3,1.5,.5,1)}
+.dates div,.rules div,.dish,.ev div,.groups div,.flagfacts div{transition:transform .25s cubic-bezier(.3,1.4,.5,1),box-shadow .25s}
+.dates div:hover,.rules div:hover,.dish:hover,.ev div:hover,.groups div:hover,.flagfacts div:hover{transform:translateY(-4px) rotate(-.4deg);box-shadow:0 10px 24px rgba(92,10,20,.14)}
+html.rv .rvx{opacity:0;transform:translateY(34px);transition:opacity .7s ease-out,transform .8s cubic-bezier(.2,1.1,.3,1)}
+html.rv .rvx.on{opacity:1;transform:none}
+html.card *{animation:none!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html.rv .rvx{opacity:1;transform:none}}
 </style>
 </head><body>
 <header class="top"><div class="in"><a class="brand" href="#top"><img src="icon.svg" width="28" height="28" alt=""><span>Kin Jay</span></a>
