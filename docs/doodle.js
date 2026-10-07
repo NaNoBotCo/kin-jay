@@ -389,6 +389,8 @@
     for (var k = 0; k < 9; k++) { var lx = w * 0.62 + k * 9, on = k < lamps; c.fillStyle = on ? "#ffcf4a" : "#3a3a4a"; c.beginPath(); c.arc(lx, h * 0.3, 3.5, 0, TAU); c.fill(); }
     hand(c, lamps + " / 9", w * 0.62, h * 0.38, 14, "#fff6d8", "left");
   };
+  window.JAYDOODLE = { ICON: ICON, SCENE: SCENE, ink: ink, wash: wash, shape: shape, hand: hand, paper: paper, flagpin: flagpin, pin: pin,
+    proj: proj, circle: circle, person: person, drawThailand: drawThailand, setMap: function (m) { M = m; } };   // the reel draws with these
   (function scenes() {
     var cv = $("scenecv"); if (!cv) return;
     var S, sel = window.JAYDAY || 0;
