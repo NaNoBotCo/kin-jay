@@ -346,13 +346,108 @@
     }
     pennants(c, w, h * 0.1, t, 8);
   };
-  SCENE.lion = function (c, w, h, t) {
-    sky(c, w, h, "#ffe9b8", "#fff8e6"); ground0(c, w, h);
-    ICON.lion(c, w * 0.3, h * 0.8, h * 0.55, 3, t);
-    var R = []; for (var i = 0; i < 14; i++) { var x = w * 0.48 + i * w * 0.035, y = h * 0.52 + Math.sin(t * 4 - i * 0.6) * h * 0.1; R.push([x, y]); }
-    ink(c, R, { seed: 5, w: 16, col: "#e7a21f", a: 0.85, amp: 0.5 }); ink(c, R, { seed: 6, w: 3, col: RED, amp: 0.5 });
-    R.forEach(function (p, i) { if (i % 3 === 1) ink(c, [p, [p[0], h * 0.8]], { seed: i, w: 1.4 }); });
-    shape(c, circle(R[0][0] - 8, R[0][1], 12, 10), RED, 9, 1.2);
+  SCENE.lion = function (c, w, h, t) {           // the lion leaps for the hanging greens every four seconds; the jaw snaps on the beat
+    var u = Math.min(w / 540, h / 400), beat = t * 2, cyc = (t % 4) / 4, gy = h * 0.8, i, k;
+    sky(c, w, h, "#ff9f4a", "#ffe6b0");
+    c.save(); c.translate(w * 0.3, h * 0.42); c.rotate(t * 0.15); c.fillStyle = "rgba(255,240,180,.32)";
+    for (i = 0; i < 14; i++) { c.rotate(TAU / 14); c.beginPath(); c.moveTo(0, 0); c.lineTo(w * 1.2, -w * 0.12); c.lineTo(w * 1.2, w * 0.12); c.closePath(); c.fill(); }
+    c.restore();
+    pennants(c, w, h * 0.05, t, 11); ground0(c, w, h, "#d9a85a");
+    var lp = cyc > 0.5 && cyc < 0.85 ? Math.sin((cyc - 0.5) / 0.35 * Math.PI) : 0;        // the leap, 0 → 1 → 0
+    var bob = Math.abs(Math.sin(beat * Math.PI)) * 7 * u;
+    var R = 68 * u, hx0 = w * 0.32, hy0 = gy - 150 * u;
+    var hx = hx0 + Math.sin(t * 1.1) * 8 * u - lp * R * 1.25, hy = hy0 - bob - lp * 70 * u;           // the leap lunges forward and up
+    var tx = w * 0.8, ty = gy - 135 * u - bob * 0.6 - lp * 14 * u;
+    var bit = cyc > 0.67, bite = bit ? (cyc - 0.67) * 4 : -1;                               // seconds since the bite
+    function leg(x0, y0, x1, y1, bend, sd) {                                                  // a dancer's leg in lion trousers
+      var kx = (x0 + x1) / 2 + bend, ky = (y0 + y1) / 2;
+      c.save(); c.lineCap = c.lineJoin = "round";
+      c.strokeStyle = "#f2b72b"; c.lineWidth = 22 * u; c.beginPath(); c.moveTo(x0, y0); c.lineTo(kx, ky); c.lineTo(x1, y1 - 8 * u); c.stroke();
+      c.strokeStyle = RED; c.lineWidth = 3 * u; c.setLineDash([3 * u, 7 * u]); c.stroke(); c.restore();
+      for (var f = 0; f < 5; f++) wash(c, circle(x1 - 10 * u + f * 5 * u, y1 - 10 * u, 6 * u, 7), "#ffffff", 0.95, sd + f);
+      shape(c, [[x1 - 13 * u, y1 - 5 * u], [x1 + 15 * u, y1 - 5 * u], [x1 + 17 * u, y1], [x1 - 13 * u, y1]], "#1c1410", sd + 6, 1);
+    }
+    // the body cloth: a scaled hump from behind the head to the tail, fringe swinging
+    var top = [], bot = [], N = 12;
+    for (i = 0; i <= N; i++) {
+      var q = i / N, x = hx + R * 0.4 + (tx - hx - R * 0.4) * q, yT = (hy - R * 0.55) * (1 - q) + (ty - 30 * u) * q - Math.sin(q * Math.PI) * 26 * u + Math.sin(t * 5 - q * 6) * 6 * u;
+      top.push([x, yT]); bot.push([x, yT + (R * 1.25) * (1 - q) + 118 * u * q + Math.sin(t * 6 - q * 5) * 4 * u]);
+    }
+    // legs: the rear dancer in a horse stance, the front one lifted on the leap
+    var st = Math.sin(beat * Math.PI) * 6 * u;
+    leg(tx - 50 * u, bot[N - 2][1] - 30 * u, tx - 78 * u, gy, -14 * u - st, 100);
+    leg(tx - 10 * u, bot[N][1] - 30 * u, tx + 18 * u, gy, 14 * u + st, 110);
+    var fx = hx + R * 0.55, fy = hy + R * 0.6, foot = lp > 0.05 ? Math.min(gy, fy + 70 * u) : gy;
+    leg(fx - 6 * u, fy, fx - 26 * u, foot, -18 * u + st, 120);
+    leg(fx + 16 * u, fy, fx + 36 * u + st, foot, 16 * u, 130);
+    shape(c, top.concat(bot.slice().reverse()), "#d4202a", 61, 1.6);
+    for (i = 1; i < N; i++) for (k = 1; k < 4; k++) {                                         // gold scales
+      var sx = top[i][0], sy = top[i][1] + (bot[i][1] - top[i][1]) * k / 4.2;
+      c.strokeStyle = "rgba(255,210,31,.85)"; c.lineWidth = 2 * u; c.beginPath(); c.arc(sx, sy, 7 * u, 0.15 * Math.PI, 0.85 * Math.PI); c.stroke();
+    }
+    for (i = 1; i < N; i += 1) wash(c, circle(top[i][0], top[i][1], 7 * u, 8), i % 2 ? YEL : "#ff8a1f", 0.95, 70 + i);   // spine tufts
+    for (i = 0; i <= N; i++) ink(c, [[bot[i][0], bot[i][1]], [bot[i][0] + Math.sin(t * 7 + i) * 4 * u, bot[i][1] + 14 * u]], { seed: 80 + i, w: 3 * u, col: "#ffffff", a: 0.95 });
+    for (i = 0; i < 6; i++) wash(c, circle(tx + 22 * u + Math.cos(i) * 10 * u + Math.sin(t * 9) * 8 * u, ty - 6 * u + Math.sin(i * 2) * 10 * u, 11 * u, 8), i % 2 ? "#ffffff" : YEL, 0.95, 90 + i);   // the tail, wagging
+    // the head
+    var tilt = Math.sin(t * 2.3) * 0.12 - lp * 0.18, open = bit && bite < 0.25 ? 0 : Math.pow(Math.abs(Math.sin(beat * Math.PI)), 1.5) * 0.6 + lp * 0.7;
+    var blink = cyc > 0.3 && cyc < 0.36 ? Math.sin((cyc - 0.3) / 0.06 * Math.PI) : 0;
+    c.save(); c.translate(hx, hy); c.rotate(tilt);
+    for (i = 0; i < 16; i++) { var a = i / 16 * TAU; wash(c, circle(Math.cos(a) * R * 1.02, Math.sin(a) * R * 1.02, R * 0.2, 8), i % 2 ? "#ffffff" : YEL, 0.95, 140 + i); }
+    [-1, 1].forEach(function (s2) {                                                           // ears
+      c.save(); c.translate(s2 * R * 0.92, -R * 0.55); c.rotate(s2 * (0.5 + Math.sin(t * 9 + s2) * 0.25));
+      shape(c, [[-10 * u, 0], [0, -26 * u], [10 * u, 0]], YEL, 160 + s2, 1.2); c.restore();
+    });
+    shape(c, circle(0, 0, R, 24), "#e8302a", 170, 1.8);
+    var band = []; for (i = 0; i <= 10; i++) { var b = Math.PI * (1.12 + 0.76 * i / 10); band.push([Math.cos(b) * R * 0.95, Math.sin(b) * R * 0.95]); }
+    for (i = 10; i >= 0; i--) { var b2 = Math.PI * (1.12 + 0.76 * i / 10); band.push([Math.cos(b2) * R * 0.62, Math.sin(b2) * R * 0.62 + R * 0.1]); }
+    shape(c, band, YEL, 171, 1.2);
+    shape(c, [[-R * 0.1, -R * 0.88], [0, -R * 1.45], [R * 0.1, -R * 0.88]], "#2f9a4a", 172, 1.2);   // the horn
+    shape(c, circle(0, -R * 0.56, R * 0.16, 12), "#dfe8ee", 173, 1.2);                                // the mirror
+    c.strokeStyle = "rgba(255,255,255," + (0.5 + 0.5 * Math.sin(t * 4)) + ")"; c.lineWidth = 2 * u; c.beginPath(); c.moveTo(-R * 0.08, -R * 0.62); c.lineTo(R * 0.04, -R * 0.5); c.stroke();
+    [-1, 1].forEach(function (s2) {
+      var ex = s2 * R * 0.42, ey = -R * 0.12, er = R * 0.25;
+      shape(c, circle(ex, ey, er, 14), "#ffffff", 180 + s2, 1.6);
+      var look = Math.sin(t * 1.7) * er * 0.35;
+      c.fillStyle = "#1c1410"; c.beginPath(); c.arc(ex + look, ey + er * 0.1, er * 0.45, 0, TAU); c.fill();
+      c.fillStyle = "#ffffff"; c.beginPath(); c.arc(ex + look - er * 0.15, ey - er * 0.08, er * 0.13, 0, TAU); c.fill();
+      if (blink > 0) { c.save(); c.beginPath(); c.arc(ex, ey, er + 1, 0, TAU); c.clip(); c.fillStyle = "#f2b72b"; c.fillRect(ex - er - 2, ey - er - 2, er * 2 + 4, (er * 2 + 4) * blink); c.restore(); }
+      for (var f = 0; f < 4; f++) ink(c, [[ex - s2 * er * 0.9 + s2 * f * er * 0.5, ey - er * 1.05 - f * 2 * u], [ex - s2 * er * 0.6 + s2 * f * er * 0.5, ey - er * 1.5 - f * 3 * u]], { seed: 190 + f + s2 * 9, w: 3.2 * u, col: "#ffffff", a: 0.95 });   // fierce brows
+    });
+    var my = R * 0.38, jo = open * R * 0.55;
+    shape(c, [[-R * 0.55, my], [R * 0.55, my], [R * 0.45, my + jo + 4 * u], [-R * 0.45, my + jo + 4 * u]], "#5c0a14", 200, 1.2);
+    if (jo > 6 * u) wash(c, [[-R * 0.25, my + jo], [R * 0.25, my + jo], [0, my + jo * 0.5]], "#ff7a9a", 0.95, 201);
+    for (i = 0; i < 6; i++) { var tx2 = -R * 0.45 + i * R * 0.18; c.fillStyle = "#ffffff"; c.beginPath(); c.moveTo(tx2, my); c.lineTo(tx2 + R * 0.09, my + 9 * u); c.lineTo(tx2 + R * 0.18, my); c.fill(); }
+    shape(c, [[-R * 0.5, my + jo + 4 * u], [R * 0.5, my + jo + 4 * u], [R * 0.35, my + jo + R * 0.3], [-R * 0.35, my + jo + R * 0.3]], "#e8302a", 202, 1.4);   // the jaw
+    for (i = 0; i < 7; i++) { var bx = -R * 0.33 + i * R * 0.11; ink(c, [[bx, my + jo + R * 0.3], [bx + Math.sin(t * 8 + i) * 4 * u, my + jo + R * 0.52]], { seed: 210 + i, w: 3.2 * u, col: "#ffffff", a: 0.95 }); }   // the beard
+    shape(c, circle(0, R * 0.16, R * 0.15, 10), YEL, 220, 1.2);                                     // the nose
+    c.restore();
+    // the greens on a string, lowered again each round
+    var lx = hx0 - R * 1.25, lyy = hy0 - 70 * u + R * 0.3, drop = Math.min(1, cyc / 0.12);
+    if (!bit) {
+      var ly0 = lyy - (1 - drop) * h * 0.5;
+      ink(c, [[lx, 0], [lx, ly0 - 14 * u]], { seed: 41, w: 1, a: 0.8 });
+      for (i = 0; i < 5; i++) wash(c, circle(lx + Math.cos(i * 1.3) * 9 * u, ly0 + Math.sin(i * 1.3) * 7 * u, 11 * u, 9), i % 2 ? "#3f9a3a" : "#7cc24a", 0.9, 50 + i);
+      shape(c, [[lx - 6 * u, ly0 + 12 * u], [lx + 6 * u, ly0 + 12 * u], [lx + 6 * u, ly0 + 28 * u], [lx - 6 * u, ly0 + 28 * u]], RED, 57, 1);
+    } else if (bite < 1.3) {                                                                 // leaves fly
+      var Rr = rnd(Math.floor(t / 4) + 3);
+      for (i = 0; i < 20; i++) {
+        var vx = (Rr() - 0.5) * 420 * u, vy = -(80 + Rr() * 220) * u, ph = Rr() * TAU;
+        var px = lx + vx * bite, py = lyy + 20 * u + vy * bite + 420 * u * bite * bite;
+        c.save(); c.translate(px, py); c.rotate(ph + bite * 8); c.globalAlpha = Math.max(0, 1 - bite / 1.3);
+        c.fillStyle = i % 2 ? "#3f9a3a" : "#8fd04f"; c.beginPath(); c.ellipse(0, 0, 14 * u, 7 * u, 0, 0, TAU); c.fill(); c.restore();
+      }
+    }
+    if (lp > 0.6) for (i = 0; i < 6; i++) {                                                          // sparkle at the top of the leap
+      var sa = i / 6 * TAU + t * 3, sr = R * (1.5 + 0.2 * Math.sin(t * 10 + i)), spx = hx + Math.cos(sa) * sr, spy = hy + Math.sin(sa) * sr, ss = 7 * u * lp;
+      c.fillStyle = "#fff6c0"; c.beginPath(); c.moveTo(spx, spy - ss * 2); c.lineTo(spx + ss * 0.5, spy); c.lineTo(spx, spy + ss * 2); c.lineTo(spx - ss * 0.5, spy); c.closePath(); c.fill();
+      c.beginPath(); c.moveTo(spx - ss * 2, spy); c.lineTo(spx, spy + ss * 0.5); c.lineTo(spx + ss * 2, spy); c.lineTo(spx, spy - ss * 0.5); c.closePath(); c.fill();
+    }
+    // the drum, bottom right, struck on the beat
+    var dx = w * 0.93, dy = gy + 14 * u, hit = Math.pow(1 - (beat % 1), 6);
+    shape(c, [[dx - 26 * u, dy - 22 * u], [dx + 26 * u, dy - 22 * u], [dx + 22 * u, dy + 12 * u], [dx - 22 * u, dy + 12 * u]], RED, 230, 1.4);
+    shape(c, [[dx - 26 * u, dy - 26 * u], [dx + 26 * u, dy - 26 * u], [dx + 26 * u, dy - 18 * u], [dx - 26 * u, dy - 18 * u]], "#f6efd8", 231, 1.2);
+    ink(c, [[dx - 30 * u, dy - 60 * u + hit * 30 * u], [dx - 6 * u, dy - 26 * u - (1 - hit) * 14 * u]], { seed: 232, w: 3 * u, col: "#6b3a1a" });
+    if (hit > 0.3) { c.strokeStyle = "rgba(255,255,255," + hit + ")"; c.lineWidth = 2 * u; c.beginPath(); c.ellipse(dx, dy - 22 * u, 34 * u * (1.6 - hit), 10 * u * (1.6 - hit), 0, 0, TAU); c.stroke(); }
   };
   SCENE.stars = function (c, w, h, t) {
     sky(c, w, h, "#0d0820", "#2a1840");
