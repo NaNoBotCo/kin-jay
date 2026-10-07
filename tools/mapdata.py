@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""mapdata.py — the ground under the two province maps and the old-city inset. Writes docs/map.json.
+"""mapdata.py — the ground under the doodle maps. Writes docs/map.json.
 
+Thailand and its neighbours: Natural Earth 1:50m (public domain), tools/ne_countries.json.
 Amphoe outlines: Mot Dang's data/admin_boundaries.json (OCHA COD-AB Thailand, Royal Thai
-Survey Department, CC BY-IGO). Water in the old city: khom-loi's map.json, cut from Mot
-Dang's land.json (OpenStreetMap contributors, ODbL, via Protomaps).
+Survey Department, CC BY-IGO). Water, rivers and roads of the two old towns: Mot Dang's
+city-live and doodle-chiang-rai data (OpenStreetMap contributors, ODbL, via Protomaps).
 
 Run:  python3 tools/mapdata.py
 """
@@ -12,8 +13,10 @@ import os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MD = os.path.join(HERE, "..", "..", "mot-dang")
-KL = os.path.join(HERE, "..", "..", "khom-loi", "docs", "map.json")
-CITY = (18.755, 98.955, 18.815, 99.025)   # S W N E: the old city and Warorot
+SITES = os.path.join(MD, "assets", "sites")
+CITY = (18.755, 98.955, 18.815, 99.025)     # S W N E: Chiang Mai's old city and Warorot
+CRTOWN = (19.875, 99.795, 19.935, 99.865)   # Chiang Rai's old town and the Kok
+TH = (5.4, 97.2, 20.6, 105.8)
 
 
 def dp(pts, eps):
@@ -34,34 +37,76 @@ def dp(pts, eps):
     return dp(pts[:i + 1], eps)[:-1] + dp(pts[i:], eps)
 
 
+def ring(r, eps):
+    """a closed ring, simplified in two halves so its ends survive"""
+    h = len(r) // 2
+    return dp(r[:h + 1], eps)[:-1] + dp(r[h:], eps)
+
+
+def dec(e, k):
+    pts, a, b = [], e[0], e[1]
+    pts.append((round(a / k, 5), round(b / k, 5)))
+    for i in range(2, len(e), 2):
+        a += e[i]; b += e[i + 1]
+        pts.append((round(a / k, 5), round(b / k, 5)))
+    return pts
+
+
+def inside(pts, box, pad=0.004):
+    S, W, N, E = box
+    return any(S - pad < la < N + pad and W - pad < ln < E + pad for la, ln in pts)
+
+
+def town(land_path, roads_path, box):
+    land = json.load(open(land_path))
+    roads = json.load(open(roads_path))
+    k = land["scale"]
+    out = {"bbox": list(box), "water": [], "rivers": [], "roads": {"major": []}}
+    for poly in land["feats"].get("water", []):
+        rings = [dec(r, k) for r in poly]
+        if rings and inside(rings[0], box):
+            out["water"].append([ring(r, 0.00004) for r in rings])
+    for w, e in land.get("rivers", []):
+        pts = dec(e, k)
+        if inside(pts, box):
+            out["rivers"].append([w, dp(pts, 0.00005)])
+    for cls in ("major",):
+        for e in roads[cls]:
+            pts = dec(e, roads["scale"])
+            if inside(pts, box, 0) and len(pts) > 2:
+                out["roads"][cls].append(dp(pts, 0.0001))
+    return out
+
+
 def main():
     ab = json.load(open(os.path.join(MD, "data", "admin_boundaries.json")))
-    out = {"source": "Amphoe: OCHA COD-AB Thailand, Royal Thai Survey Department, CC BY-IGO. Water: OpenStreetMap contributors, ODbL, via Protomaps.",
-           "amphoe": {"cm": [], "cr": []}, "city": {"bbox": list(CITY), "water": []}}
+    out = {"source": "Thailand: Natural Earth (public domain). Amphoe: OCHA COD-AB Thailand, Royal Thai Survey Department, CC BY-IGO. Towns: OpenStreetMap contributors, ODbL, via Protomaps.",
+           "amphoe": {"cm": [], "cr": []}, "thailand": {"bbox": list(TH), "land": {}}}
     for f in ab["levels"]["amphoe"]["features"]:
-        p = f["properties"]
-        g = f["geometry"]
+        p, g = f["properties"], f["geometry"]
+        polys = [g["coordinates"]] if g["type"] == "Polygon" else g["coordinates"]
+        rings = [r for r in (ring([(round(la, 4), round(ln, 4)) for ln, la in poly[0]], 0.004) for poly in polys) if len(r) >= 4]
+        out["amphoe"][p["province"]].append({"th": p["name"], "en": p["nameEn"], "rings": rings})
+    ne = json.load(open(os.path.join(HERE, "ne_countries.json")))["countries"]
+    for a3, g in ne.items():
         polys = [g["coordinates"]] if g["type"] == "Polygon" else g["coordinates"]
         rings = []
         for poly in polys:
-            r = [(round(la, 4), round(ln, 4)) for ln, la in poly[0]]
-            h = len(r) // 2
-            r = dp(r[:h + 1], 0.004)[:-1] + dp(r[h:], 0.004)
-            if len(r) >= 4:
-                rings.append(r)
-        out["amphoe"][p["province"]].append({"th": p["name"], "en": p["nameEn"], "rings": rings})
-    S, W, N, E = CITY
-    for poly in json.load(open(KL))["water"]:
-        rings = []
-        for r in poly:
-            if any(S - .01 < la < N + .01 and W - .01 < ln < E + .01 for la, ln in r):
-                rings.append([(round(la, 4), round(ln, 4)) for la, ln in r])
-        if rings:
-            out["city"]["water"].append(rings)
+            r = [(round(la, 3), round(ln, 3)) for ln, la in poly[0]]
+            if inside(r, TH, 1.0) and len(r) >= 4:
+                r = ring(r, 0.02 if a3 == "THA" else 0.05)
+                if len(r) >= 4:
+                    rings.append(r)
+        out["thailand"]["land"][a3] = rings
+    out["city"] = town(os.path.join(SITES, "city-live", "data", "land.json"), os.path.join(SITES, "city-live", "data", "roads.json"), CITY)
+    out["crtown"] = town(os.path.join(SITES, "doodle-chiang-rai", "data", "land.json"), os.path.join(SITES, "doodle-chiang-rai", "data", "roads.json"), CRTOWN)
     with open(os.path.join(HERE, "..", "docs", "map.json"), "w") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
-    n = sum(len(a["rings"]) for v in out["amphoe"].values() for a in v)
-    print(f"map.json: {n} amphoe rings, {len(out['city']['water'])} water shapes")
+    for k in ("city", "crtown"):
+        t = out[k]
+        print(k, len(t["water"]), "water,", len(t["rivers"]), "rivers,", len(t["roads"]["major"]), "roads")
+    print("thailand rings:", {a: len(r) for a, r in out["thailand"]["land"].items()})
+    print("bytes:", os.path.getsize(os.path.join(HERE, "..", "docs", "map.json")))
 
 
 if __name__ == "__main__":

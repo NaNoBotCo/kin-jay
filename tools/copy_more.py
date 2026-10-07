@@ -13,30 +13,58 @@ TF = "https://thailandfoundation.or.th/phuket-vegetarian-festival/"
 IARJ = "https://so03.tci-thaijo.org/index.php/IARJ/article/download/276454/185544"
 NHB = "https://www.roots.gov.sg/en/ich-landing/ich/the-nine-emperor-gods-festival"
 
-DAYNOTES = {
- "en": [
-  "Jay begins. Yaowarat opens at 16:00; Korat's shrine rites at 16:09.",
-  "Phuket procession: Naka shrine, 07:30.",
-  "Phuket: Sapam shrine, 07:00. At dusk the shrines feed the five heavenly armies.",
-  "Phuket: Sam Kong shrine, 06:45. Korat procession, 08:29.",
-  "Phuket: Tha Rua shrine, 06:09. Krabi gathers on Maha Rat Road.",
-  "Phuket: Bang Niao shrine, 06:00. Hat Yai procession with lion and dragon dances. Korat crosses the zodiac bridge, 19:19.",
-  "Phuket: Jui Tui shrine, 08:00. Phang Nga procession. Phuket's offering to the stars, about 20:00.",
-  "Phuket: Kathu, the oldest shrine, 06:45.",
-  "Phuket: Lo Rong shrine, 07:00. 22:30: the gods go down to the sea at Saphan Hin. Jay ends at midnight.",
- ],
- "th": [
-  "เริ่มกินเจ เยาวราชเปิดงาน 16.00 น. โคราชทำพิธีที่ศาลเจ้า 16.09 น.",
-  "ภูเก็ตแห่: อ๊ามนาคา 07.30 น.",
-  "ภูเก็ต: อ๊ามสะปำ 07.00 น. ค่ำนี้ศาลเจ้าเลี้ยงทหารห้าทัพ",
-  "ภูเก็ต: อ๊ามสามกอง 06.45 น. โคราชแห่อิ้วเก้ง 08.29 น.",
-  "ภูเก็ต: อ๊ามท่าเรือ 06.09 น. กระบี่รวมพลคนกินเจ ถนนมหาราช",
-  "ภูเก็ต: อ๊ามบางเหนียว 06.00 น. หาดใหญ่แห่รอบเมือง เชิดสิงโตมังกร โคราชข้ามสะพานสิบสองนักษัตร 19.19 น.",
-  "ภูเก็ต: อ๊ามจุ้ยตุ่ย 08.00 น. พังงาแห่ขบวน ภูเก็ตบูชาดาวราว 20.00 น.",
-  "ภูเก็ต: อ๊ามกะทู้ อ๊ามเก่าที่สุด 06.45 น.",
-  "ภูเก็ต: อ๊ามหล่อโรง 07.00 น. 22.30 น. ส่งพระลงทะเลที่สะพานหิน ออกเจหลังเที่ยงคืน",
- ],
+# per day: the scene, then [town, what] pairs
+DAYPLAN = [
+ ("pole", {"en": [("bkk", "Yaowarat opens, 16:00"), ("korat", "Shrine rites, 16:09"), ("phuket", "Nine lamps up on the pole since last night"), ("cm", "Guan Im foundation rites; J Food Festival at both Centrals")],
+           "th": [("bkk", "เยาวราชเปิดงาน 16.00 น."), ("korat", "พิธีที่ศาลเจ้า 16.09 น."), ("phuket", "ยกเสาโกเต้ง ตะเกียงเก้าดวงขึ้นแล้วตั้งแต่เมื่อวาน"), ("cm", "พิธีที่มูลนิธิกวนอิมธรรมทาน งานเจที่เซ็นทรัลสองแห่ง")]}),
+ ("sedan", {"en": [("phuket", "Naka shrine procession, 07:30")], "th": [("phuket", "ขบวนแห่อ๊ามนาคา 07.30 น.")]}),
+ ("armies", {"en": [("phuket", "Sapam shrine procession, 07:00. At dusk: feeding the five heavenly armies")], "th": [("phuket", "ขบวนอ๊ามสะปำ 07.00 น. ค่ำ: เลี้ยงทหารห้าทัพ")]}),
+ ("procession", {"en": [("phuket", "Sam Kong shrine, 06:45"), ("korat", "Procession through the city, 08:29")], "th": [("phuket", "อ๊ามสามกอง 06.45 น."), ("korat", "แห่อิ้วเก้งรอบเมือง 08.29 น.")]}),
+ ("gather", {"en": [("phuket", "Tha Rua shrine, 06:09"), ("krabi", "Jay keepers gather on Maha Rat Road")], "th": [("phuket", "อ๊ามท่าเรือ 06.09 น."), ("krabi", "รวมพลคนกินเจ ถนนมหาราช")]}),
+ ("lion", {"en": [("phuket", "Bang Niao shrine, 06:00"), ("hatyai", "Procession, lion and dragon dances"), ("korat", "Zodiac bridge crossing, 19:19")], "th": [("phuket", "อ๊ามบางเหนียว 06.00 น."), ("hatyai", "แห่รอบเมือง เชิดสิงโตมังกร"), ("korat", "ข้ามสะพานสิบสองนักษัตร 19.19 น.")]}),
+ ("stars", {"en": [("phuket", "Jui Tui shrine, 08:00. Offering to the stars, about 20:00"), ("phangnga", "Procession")], "th": [("phuket", "อ๊ามจุ้ยตุ่ย 08.00 น. บูชาดาวราว 20.00 น."), ("phangnga", "แห่ขบวน")]}),
+ ("firecrackers", {"en": [("phuket", "Kathu, the oldest shrine, 06:45")], "th": [("phuket", "อ๊ามกะทู้ อ๊ามเก่าที่สุด 06.45 น.")]}),
+ ("sea", {"en": [("phuket", "Lo Rong shrine, 07:00. 22:30: the gods go to the sea at Saphan Hin"), ("all", "Jay ends at midnight")], "th": [("phuket", "อ๊ามหล่อโรง 07.00 น. 22.30 น. ส่งพระลงทะเลที่สะพานหิน"), ("all", "ออกเจหลังเที่ยงคืน")]}),
+]
+
+TOWNS = {  # lat, lng, icon, label offsets
+ "cm": (18.788, 98.985, "mountain", "เชียงใหม่", "Chiang Mai", -30, 8, "right"),
+ "cr": (19.907, 99.831, "clock", "เชียงราย", "Chiang Rai", 0, 14, "center"),
+ "nsawan": (15.704, 100.137, "shrine", "นครสวรรค์", "Nakhon Sawan", -26, 6, "right"),
+ "korat": (14.975, 102.098, "figures", "โคราช", "Korat", 0, 14, "center"),
+ "bkk": (13.741, 100.51, "arch", "กรุงเทพฯ เยาวราช", "Bangkok, Yaowarat", -28, 6, "right"),
+ "phangnga": (8.451, 98.526, "karst", "พังงา", "Phang Nga", 22, -10, "left"),
+ "krabi": (8.063, 98.916, "karst", "กระบี่", "Krabi", 22, 0, "left"),
+ "phuket": (7.885, 98.388, "shrine", "ภูเก็ต", "Phuket", 0, 16, "center"),
+ "trang": (7.557, 99.611, "fire", "ตรัง", "Trang", 0, 14, "center"),
+ "hatyai": (7.008, 100.474, "lion", "หาดใหญ่", "Hat Yai", -20, 6, "right"),
 }
+SEAS = {"en": [(10.2, 97.6, "Andaman Sea"), (11.4, 100.6, "Gulf of Thailand")], "th": [(10.2, 97.6, "ทะเลอันดามัน"), (11.4, 100.6, "อ่าวไทย")]}
+
+# landmarks per map view: lat, lng, icon, th, en, size, dx, dy
+LANDMARKS = {
+ "city": [(18.7877, 98.9932, "gate", "ประตูท่าแพ", "Tha Phae Gate", 1, 14, -10, "left"),
+          (18.7870, 98.9875, "chedi", "วัดเจดีย์หลวง", "Wat Chedi Luang", 1.2, 0, 0),
+          (18.7902, 98.9874, "figures", "อนุสาวรีย์สามกษัตริย์", "Three Kings", 0.9, 0, -46),
+          (18.7905, 99.0007, "market", "กาดหลวง", "Warorot", 1, 0, 0),
+          (18.7840, 99.0040, "bridge", "ขัวเหล็ก", "Iron Bridge", 0.8, 0, 0),
+          (18.7848, 99.0004, "market", "ไนท์บาซาร์", "Night Bazaar", 0.8, -4, 0),
+          (18.7880, 98.9700, "mountain", "↖ ดอยสุเทพ", "↖ Doi Suthep", 1.1, 0, 0)],
+ "cm": [(18.8049, 98.9221, "mountain", "ดอยสุเทพ", "Doi Suthep", 0.45, -14, 0, "right"),
+        (18.5886, 98.4867, "peak", "ดอยอินทนนท์", "Doi Inthanon", 0.55, 0, 0),
+        (19.398, 98.888, "peak", "ดอยหลวงเชียงดาว", "Doi Luang Chiang Dao", 0.5, 0, 0)],
+ "cr": [(19.9074, 99.8309, "clock", "หอนาฬิกา", "Clock Tower", 0.8, 16, -4, "left"),
+        (19.8243, 99.7630, "white", "วัดร่องขุ่น", "White Temple", 0.8, -18, 0, "right"),
+        (20.3534, 100.0831, "triangle", "สามเหลี่ยมทองคำ", "Golden Triangle", 0.7, 16, -6, "left"),
+        (20.4437, 99.8807, "bridge", "แม่สาย", "Mae Sai", 0.6, 0, -40),
+        (20.3476, 99.8392, "peak", "ดอยตุง", "Doi Tung", 0.6, -16, -6, "right")],
+ "crtown": [(19.9074, 99.8309, "clock", "หอนาฬิกา", "Clock Tower", 1.2, 0, 0),
+            (19.9115, 99.8278, "chedi", "วัดพระแก้ว", "Wat Phra Kaew", 1, 0, 0),
+            (19.9053, 99.8341, "market", "ไนท์บาซาร์", "Night Bazaar", 0.9, 0, 0),
+            (19.9234, 99.8418, "chedi", "วัดร่องเสือเต้น", "Wat Rong Suea Ten", 0.9, 0, 0)],
+}
+MAPNOTES = {"en": {"city": [(18.800, 99.006, "Ping River"), (18.782, 98.976, "the moat", "#2f6fa0")], "crtown": [(19.925, 99.823, "Kok River")], "cm": [], "cr": []},
+            "th": {"city": [(18.800, 99.006, "แม่น้ำปิง"), (18.782, 98.976, "คูเมือง", "#2f6fa0")], "crtown": [(19.925, 99.823, "แม่น้ำกก")], "cm": [], "cr": []}}
 
 THAI_EVENTS = {
  "en": [
@@ -146,34 +174,34 @@ WORDS = {
 
 MORE = {
  "en": {
-  "thai_kick": "Across Thailand", "thai_h": "Where the country keeps it",
+  "thai_kick": "Across Thailand", "thai_h": "Go: festivals across Thailand",
   "thai_p": ["Strongest where Hokkien and Teochew Thais settled: Phuket, the Andaman coast, Trang, Hat Yai, Yaowarat, Korat."],
-  "groups_kick": "Who keeps it", "groups_h": "Thailand's vegetarian groups",
+  "groups_kick": "Who keeps it", "groups_h": "Who eats jay",
   "groups_p": [],
-  "leg_kick": "Legends", "leg_h": "Why nine days",
+  "leg_kick": "Legends", "leg_h": "Legends",
   "leg_p": [],
   "dip_h": "Join the Dipper", "dip_p": ["Tap the seven stars in order, bowl to handle."],
   "dip_alt": "The seven stars of the Big Dipper; join them in order and two more appear",
   "dip_go": "Show me", "dip_start": "Tap the glowing star.", "dip_n": "{n} joined, {m} to go.",
   "dip_done": "Seven. The legend adds two that no one can see, to make nine: the Nine Emperor Gods.",
-  "tofu_h": "Tofu, in five steps", "tofu_p": ["Legend credits Liu An, grandson of the first Han emperor: salted soy broth for his sick mother set into curds."],
+  "tofu_h": "Make tofu", "tofu_p": ["Legend credits Liu An, grandson of the first Han emperor: salted soy broth for his sick mother set into curds."],
   "tofu_alt": "Soybeans soaking, ground into milk, boiled, set into curds and pressed into a block of tofu",
   "tofu_names": ["Soak", "Grind", "Boil", "Set", "Press"],
   "tofu_steps": ["Soak the soybeans overnight until they swell.", "Grind them with water and strain off the milk.", "Boil the soy milk.", "Stir in a coagulant and the milk sets into curds.", "Press the curds in a cloth-lined box until they hold as a block."],
   "pic_kick": "Pictures", "pic_h": "The festival in pictures",
  },
  "th": {
-  "thai_kick": "ทั่วไทย", "thai_h": "กินเจที่ไหนบ้าง",
+  "thai_kick": "ทั่วไทย", "thai_h": "ไปงานกินเจทั่วไทย",
   "thai_p": ["คึกคักที่สุดในถิ่นคนไทยเชื้อสายฮกเกี้ยนและแต้จิ๋ว ภูเก็ต ฝั่งอันดามัน ตรัง หาดใหญ่ เยาวราช โคราช"],
-  "groups_kick": "ใครกินเจ", "groups_h": "กลุ่มคนกินเจและมังสวิรัติในไทย",
+  "groups_kick": "ใครกินเจ", "groups_h": "ใครกินเจ",
   "groups_p": [],
-  "leg_kick": "ตำนาน", "leg_h": "ทำไมต้องเก้าวัน",
+  "leg_kick": "ตำนาน", "leg_h": "ตำนาน",
   "leg_p": [],
   "dip_h": "ต่อดาวหมีใหญ่", "dip_p": ["แตะดาวเจ็ดดวงตามลำดับ จากกระบวยถึงปลายด้าม"],
   "dip_alt": "ดาวเจ็ดดวงของกลุ่มดาวหมีใหญ่ ต่อครบแล้วมีอีกสองดวงปรากฏ",
   "dip_go": "ต่อให้ดู", "dip_start": "แตะดาวที่กะพริบ", "dip_n": "ต่อแล้ว {n} ดวง เหลือ {m}",
   "dip_done": "ครบเจ็ด ตำนานเพิ่มอีกสองดวงที่ไม่มีใครเห็น รวมเป็นเก้า คือกิ๋วอ๋องไต่เต่",
-  "tofu_h": "เต้าหู้ห้าขั้น", "tofu_p": ["ตำนานว่าหลิวอาน หลานปฐมจักรพรรดิฮั่น ต้มน้ำถั่วใส่เกลือให้แม่ที่ป่วย แล้วน้ำถั่วจับเป็นก้อน"],
+  "tofu_h": "ทำเต้าหู้", "tofu_p": ["ตำนานว่าหลิวอาน หลานปฐมจักรพรรดิฮั่น ต้มน้ำถั่วใส่เกลือให้แม่ที่ป่วย แล้วน้ำถั่วจับเป็นก้อน"],
   "tofu_alt": "ถั่วเหลืองแช่น้ำ บดเป็นน้ำนม ต้ม จับตัวเป็นก้อน แล้วกดเป็นเต้าหู้",
   "tofu_names": ["แช่", "บด", "ต้ม", "จับตัว", "กด"],
   "tofu_steps": ["แช่ถั่วเหลืองค้างคืนจนพองตัว", "บดกับน้ำแล้วกรองเอาน้ำนมถั่ว", "ต้มน้ำเต้าหู้", "ใส่สารให้จับตัว น้ำนมถั่วจะจับเป็นก้อน", "ห่อผ้าใส่พิมพ์แล้วกดจนเป็นก้อน"],
@@ -237,8 +265,16 @@ def more(UI):
     for lang in ("en", "th"):
         u = UI[lang]
         u.update(MORE[lang])
-        for i, d in enumerate(u["days"]):
-            d[1] = DAYNOTES[lang][i]
+        names = {k: (v[3] if lang == "th" else v[4]) for k, v in TOWNS.items()}
+        names["all"] = "ทั่วไทย" if lang == "th" else "Everywhere"
+        u["dayplan"] = []
+        for i, (scene, at) in enumerate(DAYPLAN):
+            u["dayplan"].append({"scene": scene, "at": [[k, w] for k, w in at[lang] if k != "all"]})
+            u["days"][i][1] = "<br>".join(f"<b>{names[k]}</b> {w}" for k, w in at[lang])
+        u["towns"] = {k: {"lat": v[0], "lng": v[1], "icon": v[2], "name": v[3] if lang == "th" else v[4], "dx": v[5], "dy": v[6], "al": v[7]} for k, v in TOWNS.items()}
+        u["seas"] = SEAS[lang]
+        u["landmarks"] = {view: [{"lat": r[0], "lng": r[1], "icon": r[2], "name": r[3] if lang == "th" else r[4], "s": r[5], "dx": r[6], "dy": r[7], "al": r[8] if len(r) > 8 else "center"} for r in rows] for view, rows in LANDMARKS.items()}
+        u["mapnotes"] = MAPNOTES[lang]
         u["thai_events"] = [{"name": a, "when": b, "what": c, "src": d} for a, b, c, d in THAI_EVENTS[lang]]
         u["groups"] = [{"name": a, "who": b, "what": c, "src": d} for a, b, c, d in GROUPS[lang]]
         u["tales"] = [{"name": a, "kind": b, "p": c, "src": d} for a, b, c, d in TALES[lang]]
