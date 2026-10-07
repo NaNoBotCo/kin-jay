@@ -102,6 +102,35 @@ def crackle(t0, t1, rate=90):
         t += rng.exponential(1 / rate)
 
 
+def snap():                                     # one firecracker
+    n = int(0.08 * SR); t = np.arange(n) / SR
+    return (rng.standard_normal(n) * np.exp(-t * 70) + np.sin(2 * np.pi * 180 * t) * np.exp(-t * 40)) * 0.6
+
+
+def boom(dur=1.2):                              # a firework going off: thump, then the stars crackling out
+    n = int(dur * SR); t = np.arange(n) / SR
+    f = 40 + 60 * np.exp(-t * 12)
+    return (np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 4) + lp(rng.standard_normal(n), 20) * np.exp(-t * 9) * 0.8) * 0.8
+
+
+def sizzle(dur=0.4):
+    n = int(dur * SR); x = rng.standard_normal(n); x = x - lp(x, 4)
+    return x * env(n, 0.01, 6 / dur) * 0.18
+
+
+def popper():                                   # a party popper for the confetti
+    x = np.concatenate([np.zeros(int(0.02 * SR)), sizzle(0.5)])[: int(0.5 * SR)]
+    b = snap(); x[: len(b)] += b * 0.8
+    return x
+
+
+def sparkle(t0, dur=1.0, gain=0.35):            # the tail of a burst
+    t = t0
+    while t < t0 + dur:
+        put(ding(rng.uniform(2400, 4200), 0.12) * 0.5, t, gain * (1 - (t - t0) / dur), rng.uniform(-0.8, 0.8))
+        t += rng.exponential(0.035)
+
+
 # ---------------- the drum pattern (eighths at 120 bpm = 0.25 s) ----------------
 PAT_D = [1, 0, 1, 1, 0, 1, 1, 0]
 PAT_C = [0, 1, 0, 0, 1, 0, 0, 1]
@@ -166,7 +195,10 @@ put(whoosh(), 21.35, 0.8)
 groove(21.5, 26.5, 0.7)
 for i in range(9):
     put(pop(330 * 2 ** (i / 12 * 2), 800 * 2 ** (i / 12 * 2)), 21.8 + i * 0.5, 1.0, -0.4 + i * 0.1)
-crackle(27.5, 29.4, 120)
+crackle(27.5, 28.6, 160)
+for k in range(10):
+    put(snap(), 27.5 + k * 0.1, 0.9, rng.uniform(-0.7, 0.7))
+put(boom(), 28.55, 0.9); sparkle(28.7, 0.9)
 groove(26.5, 29.5, 0.6, cym=False)
 for t in (26.5, 27.5, 28.5):
     put(cha(0.6), t, 0.8)
@@ -191,6 +223,22 @@ put(gong(98, 3.5), 41.5, 1.0); put(drum(1.8), 41.5, 1.2); put(cha(1.4), 41.5, 0.
 groove(42.0, 44.0, 0.85)
 roll(44.0, 44.5, 0.5, 1.1)
 put(drum(2.0), 44.5, 1.4); put(cha(0.5), 44.5, 1.0)
+
+# sparks, confetti and fireworks, on the times stage.html bursts them
+crackle(0.0, 0.5, 140)
+for t, p in ((0.0, -0.6), (0.1, 0.6), (0.24, -0.4), (0.38, 0.4)):
+    put(snap(), t, 1.0, p)
+put(boom(), 0.55, 0.7); sparkle(0.65, 0.6, 0.3)
+put(boom(), 2.0, 0.6); sparkle(2.1, 0.9)
+for t in (1.2, 4.2, 5.6, 29.5, 44.5):
+    put(popper(), t, 0.9)
+for i, t in enumerate((8.5, 9.0, 9.5, 10.0, 11.5, 12.5, 13.0, 13.5)):
+    put(sizzle(0.5), t + 0.55, 0.9, -0.3 + 0.08 * i)
+for t in (19.4, 19.8, 20.2):
+    put(popper(), t, 0.5)
+put(boom(1.4), 33.5, 0.5); sparkle(33.6, 1.2, 0.3)
+for i, t in enumerate((41.55, 42.2, 42.7, 43.2, 43.7, 44.15)):
+    put(boom(), t, 0.85, (-0.5, 0.5, -0.3, 0.3, 0.0, -0.4)[i]); sparkle(t + 0.15, 1.0, 0.3)
 
 # ---------------- out ----------------
 fade = np.ones(N); fade[-int(0.4 * SR):] = np.linspace(1, 0, int(0.4 * SR))

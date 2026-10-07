@@ -49,9 +49,13 @@ function shake(t) {
 function cap(th, en, y, t, at, o) {          // a caption that pops in: Thai big, English under
   o = o || {}; var s = pop(t, at, 0.3); if (s <= 0) return;
   var size = o.size || 104, col = o.col || "#fff8e6", stroke = o.stroke || "#2a0508";
-  c.save(); c.translate(W / 2, y); c.scale(s, s); c.textAlign = "center"; c.textBaseline = "middle";
+  var wob = (1 - k01(t, at, at + 0.45)) * Math.sin((t - at) * 30) * 0.07 * (o.wob == null ? 1 : o.wob);
+  c.save(); c.translate(W / 2, y); c.scale(s, s); c.rotate(wob); c.textAlign = "center"; c.textBaseline = "middle";
   c.lineJoin = "round";
-  c.font = "900 " + size + "px 'Noto Sans Thai'"; c.lineWidth = size * 0.16; c.strokeStyle = stroke; c.strokeText(th, 0, 0); c.fillStyle = col; c.fillText(th, 0, 0);
+  c.font = "900 " + size + "px 'Noto Sans Thai'";
+  c.shadowColor = o.glow || "rgba(0,0,0,.45)"; c.shadowBlur = o.glow ? size * 0.5 : size * 0.12; c.shadowOffsetY = o.glow ? 0 : size * 0.06;
+  c.lineWidth = size * 0.16; c.strokeStyle = stroke; c.strokeText(th, 0, 0);
+  c.shadowColor = "transparent"; c.fillStyle = col; c.fillText(th, 0, 0);
   if (en) { var es = o.esize || Math.round(size * 0.46); c.font = "800 " + es + "px 'Noto Sans Thai'"; c.lineWidth = es * 0.2; c.strokeText(en, 0, size * 0.78); c.fillStyle = o.ecol || YEL; c.fillText(en, 0, size * 0.78); }
   c.restore();
 }
@@ -100,35 +104,138 @@ function tick(x, y, s, t, at) {
   c.moveTo(x - s, y); c.lineTo(x - s * 0.3, y + s * 0.7 * Math.min(1, u * 2)); if (u > 0.5) c.lineTo(x - s * 0.3 + s * 1.3 * (u - 0.5) * 2, y + s * 0.7 - s * 1.5 * (u - 0.5) * 2); c.stroke(); c.restore();
 }
 
+/* ---------- fx: sparks, confetti, fireworks, rays, embers. Each is a function of t, so any frame renders alone ---------- */
+var BURSTS = [], LIGHT = false;   // LIGHT: a paper background, where glow is painted rather than added
+function burst(at, x, y, kind, n, sp, cols) { BURSTS.push({ at: at, x: x, y: y, kind: kind, n: n || 60, sp: sp || 900, cols: cols, seed: (at * 977 + x * 13 + y) | 0 }); }
+var LIFE = { spark: 0.9, fire: 1.7, confetti: 2.4 };
+function drift(v, d, k, vt) { var f = (1 - Math.exp(-k * d)) / k; return (v - vt) * f + vt * d; }   // linear drag, terminal speed vt
+function drawBursts(t) {
+  BURSTS.forEach(function (b) {
+    var d = t - b.at, life = LIFE[b.kind]; if (d < 0 || d > life) return;
+    var R = rnd(b.seed), cols = b.cols || (LIGHT ? [RED, "#ff8a00", "#e8b400", DEEP] : [YEL, "#ff9a2a", "#fff3c4", "#ff4a3a"]), fade = 1 - d / life, ADD = LIGHT ? "source-over" : "lighter";
+    c.save();
+    if (d < 0.22 && b.kind !== "confetti") {      // the flash at the source
+      var fr = (b.kind === "fire" ? 340 : 220) * (0.4 + d / 0.22), fa = 0.9 * (1 - d / 0.22);
+      var g = c.createRadialGradient(b.x, b.y, 0, b.x, b.y, fr); g.addColorStop(0, "rgba(255,250,220," + fa + ")"); g.addColorStop(0.35, "rgba(255,190,60," + fa * 0.5 + ")"); g.addColorStop(1, "rgba(255,120,40,0)");
+      c.globalCompositeOperation = ADD; c.fillStyle = g; c.fillRect(b.x - fr, b.y - fr, fr * 2, fr * 2);
+    }
+    for (var i = 0; i < b.n; i++) {
+      var a = R() * TAU, v = b.sp * (0.3 + 0.7 * R()), col = cols[i % cols.length], ph = R() * TAU, sz = 0.6 + R() * 0.8;
+      if (b.kind === "confetti") {
+        a = -Math.PI / 2 + (R() - 0.5) * 2.4;
+        var vx = Math.cos(a) * v, vy = Math.sin(a) * v;
+        var x = b.x + drift(vx, d, 2.4, 0) + Math.sin(d * 4 + ph) * 36, y = b.y + drift(vy, d, 2.4, 340);
+        c.globalCompositeOperation = "source-over"; c.globalAlpha = Math.min(1, fade * 3);
+        c.save(); c.translate(x, y); c.rotate(ph + d * 6); c.scale(1, Math.cos(d * 11 + ph));
+        c.fillStyle = col; c.fillRect(-14 * sz, -8 * sz, 28 * sz, 16 * sz); c.restore();
+        continue;
+      }
+      var k = b.kind === "fire" ? 1.6 : 3.2, vt = b.kind === "fire" ? 160 : 620, tail = b.kind === "fire" ? 0.14 : 0.05;
+      var ca = Math.cos(a) * v, sa = Math.sin(a) * v, d0 = Math.max(0, d - tail);
+      var x1 = b.x + drift(ca, d, k, 0), y1 = b.y + drift(sa, d, k, vt), x0 = b.x + drift(ca, d0, k, 0), y0 = b.y + drift(sa, d0, k, vt);
+      var tw = b.kind === "fire" && d > 0.9 ? 0.5 + 0.5 * Math.sin(d * 40 + ph) : 1;
+      c.globalCompositeOperation = ADD; c.lineCap = "round"; c.strokeStyle = col;
+      c.globalAlpha = 0.28 * fade * tw; c.lineWidth = 16 * sz * fade + 3; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+      c.globalAlpha = fade * tw; c.lineWidth = 5 * sz * fade + 1.5; c.strokeStyle = i % 3 ? col : "#fffbe8"; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke();
+    }
+    c.restore();
+  });
+}
+function embers(t, n, rgb, alpha, seed) {        // glowing flecks rising through the frame
+  var R = rnd(seed || 77); c.save(); c.globalCompositeOperation = "lighter";
+  for (var i = 0; i < n; i++) {
+    var x0 = R() * W, sp = 70 + R() * 190, ph = R() * TAU, sz = 2 + R() * 5, off = R() * (H + 200);
+    var y = H + 100 - ((t * sp + off) % (H + 200)), x = x0 + Math.sin(t * 1.4 + ph) * 46, a = alpha * (0.55 + 0.45 * Math.sin(t * 7 + ph));
+    c.fillStyle = "rgba(" + rgb + "," + a * 0.22 + ")"; c.beginPath(); c.arc(x, y, sz * 3.2, 0, TAU); c.fill();
+    c.fillStyle = "rgba(" + rgb + "," + a + ")"; c.beginPath(); c.arc(x, y, sz, 0, TAU); c.fill();
+  }
+  c.restore();
+}
+function rays(x, y, t, rgb, a, r, n) {           // a slow sunburst behind a big word
+  if (a <= 0) return;
+  if (LIGHT) a = Math.min(1, a * 1.6);
+  n = n || 16; c.save(); c.translate(x, y); c.rotate(t * 0.4); c.globalCompositeOperation = LIGHT ? "source-over" : "lighter";
+  var g = c.createRadialGradient(0, 0, 0, 0, 0, r); g.addColorStop(0, "rgba(" + rgb + "," + a + ")"); g.addColorStop(0.6, "rgba(" + rgb + "," + a * 0.35 + ")"); g.addColorStop(1, "rgba(" + rgb + ",0)");
+  c.fillStyle = g; c.beginPath();
+  for (var i = 0; i < n; i++) { var a0 = i / n * TAU; c.moveTo(0, 0); c.arc(0, 0, r, a0, a0 + TAU / n * 0.5); c.closePath(); }
+  c.fill(); c.restore();
+}
+function glowBall(x, y, r, rgb, a) {
+  c.save(); c.globalCompositeOperation = LIGHT ? "source-over" : "lighter";
+  var g = c.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, "rgba(" + rgb + "," + a + ")"); g.addColorStop(1, "rgba(" + rgb + ",0)");
+  c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2); c.restore();
+}
+function vignette(a) {
+  var g = c.createRadialGradient(W / 2, H / 2, H * 0.32, W / 2, H / 2, H * 0.72); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0," + a + ")");
+  c.fillStyle = g; c.fillRect(0, 0, W, H);
+}
+function wipe(t, at) {                           // yellow-and-red flag stripes sweep across a cut
+  var d = t - at; if (d < -0.16 || d > 0.2) return;
+  var u = d < 0 ? 1 + d / 0.16 : d / 0.2;        // 0 → 1 coming in, then 0 → 1 going out
+  var off = d < 0 ? -W * 2.4 * (1 - easeOut(u)) : W * 2.4 * u * u;
+  c.save(); c.translate(off, 0); c.transform(1, 0, -0.35, 1, 0, 0);
+  var bw = 190, cols = [YEL, RED, YEL, DEEP, YEL, RED, YEL, RED, YEL, DEEP];
+  for (var i = -2; i < 10; i++) { c.fillStyle = cols[(i + 10) % cols.length]; c.fillRect(i * bw, -20, bw + 2, H + 40); }
+  c.restore();
+}
+
 /* ---------- the beats ---------- */
 var SEC = [
   [0, 3.5, hook], [3.5, 8, flag], [8, 15.5, wok], [15.5, 21.5, menu], [21.5, 31, festival], [31, 37, legend], [37, 41.5, north], [41.5, 45, end]
 ];
 // shakes on the big hits (audio.py puts drums and stamps on the same times)
-HITS.push([0.0, 16], [1.2, 12], [1.5, 30], [2.0, 22], [4.2, 26], [5.6, 26], [11.5, 34], [12.5, 14], [13.0, 14], [13.5, 14], [33.5, 20], [41.5, 18]);
+HITS.push([0.0, 16], [1.2, 12], [1.5, 30], [2.0, 22], [4.2, 26], [5.6, 26], [11.5, 34], [12.5, 14], [13.0, 14], [13.5, 14], [27.5, 14], [28.5, 16], [33.5, 20], [41.5, 18], [44.5, 22]);
+// sparks, confetti and fireworks (audio.py puts a crack, a pop or a boom under each)
+burst(0.0, 180, 720, "spark", 70, 1300); burst(0.1, 900, 560, "spark", 70, 1300); burst(0.24, 300, 1560, "spark", 50, 1000); burst(0.38, 830, 1680, "spark", 50, 1000);
+burst(0.55, 540, 1250, "fire", 90, 1100);
+burst(1.2, 540, 1980, "confetti", 150, 2700);
+burst(1.5, 540, 1040, "spark", 80, 1500, ["#ff3b3b", YEL, "#ffffff"]);
+burst(2.0, 540, 600, "fire", 110, 1300);
+burst(4.2, 290, 1030, "confetti", 60, 1500); burst(5.6, 790, 1030, "confetti", 60, 1500);
+burst(11.55, 540, 330, "spark", 80, 1400, [RED, "#ff6a00", DEEP]); burst(14.0, 540, 400, "spark", 50, 1100);
+[19.4, 19.8, 20.2].forEach(function (at, i) { burst(at, 540, 480 + i * 470, "confetti", 34, 900); });
+burst(26.55, 540, 1400, "spark", 50, 1100);
+(function () { var R = rnd(2011); for (var k = 0; k < 10; k++) burst(27.5 + k * 0.1, 140 + R() * 800, 260 + R() * 1000, "spark", 40, 1100); })();
+burst(28.55, 540, 520, "fire", 90, 1200);
+burst(29.5, 90, 1980, "confetti", 90, 2500); burst(29.55, 990, 1980, "confetti", 90, 2500);
+burst(33.5, 294, 746, "fire", 60, 700, ["#ff9ab0", "#ffd6e0", "#ffffff"]); burst(33.55, 103, 1147, "fire", 60, 700, ["#ff9ab0", "#ffd6e0", "#ffffff"]);
+var FIREWORKS = [[41.55, 540, 700, 1500], [42.2, 250, 470, 1000], [42.7, 830, 430, 1000], [43.2, 300, 1000, 900], [43.7, 800, 980, 900], [44.15, 540, 380, 1200]];
+FIREWORKS.forEach(function (f, i) { burst(f[0], f[1], f[2], "fire", 100, f[3], [[YEL, "#fff3c4", "#ff9a2a"], ["#ff5a7a", "#ffd0dc", "#fff"], [YEL, "#ffffff"], ["#7affc8", "#fff", YEL], ["#ff9a2a", "#fff3c4"], [YEL, "#ff4a3a", "#fff"]][i]); });
+burst(44.5, 540, 1980, "confetti", 180, 2800);
+var WIPES = [3.5, 8, 15.5, 21.5, 37, 41.5], FLASHES = [1.2, 19.4, 26.5, 29.5, 31];
 
 function hook(t) {
   if (t < 1.2) {
     c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
-    photo(IMG["parade-phuket"], t, 0, 1.2, 0.25);
+    var pz = 1 + 0.35 * Math.pow(1 - k01(t, 0, 0.5), 3);            // the photo slams in from close
+    c.save(); c.translate(W / 2, H / 2); c.scale(pz, pz); c.translate(-W / 2, -H / 2); photo(IMG["parade-phuket"], t, 0, 1.2, 0.25); c.restore();
+    var fl = 0.45 * Math.max(0, Math.sin(t * 40)) * (1 - k01(t, 0, 0.8));  // firecracker flicker
+    c.fillStyle = "rgba(255,200,120," + fl * 0.5 + ")"; c.fillRect(0, 0, W, H);
+    rays(W / 2, 1250, t, "255,200,60", 0.55 * k01(t, 0.55, 0.75), 900);
+    drawBursts(t);
     cap("ทั้งเมืองใส่ชุดขาว", "A whole town in white.", 300, t, 0.05, { size: 112 });
-    cap("ทำไม?", "Why?", 1250, t, 0.55, { size: 200, col: YEL });
+    cap("ทำไม?", "Why?", 1250, t, 0.55, { size: 220, col: YEL, glow: "rgba(255,150,0,.9)" });
     credit(CREDIT["parade-phuket"]);
     return;
   }
   bgRed();
+  rays(W / 2, 1060, t, "255,170,40", 0.32, 1300, 20);
+  embers(t, 40, "255,190,80", 0.8, 3);
   bunting(t, 120, 70, 9, 96, k01(t, 1.2, 1.6));
   bunting(t, 330, 80, 11, 78, k01(t, 1.4, 1.8));
   var s0 = pop(t, 1.2, 0.25); c.save(); c.translate(W / 2, 1080); c.scale(s0 * 1.8, s0 * 1.8); garlic(0, 60, 95); c.restore();
   bigX(W / 2, 1040, 250, t, 1.5);
-  cap("9 วัน", "", 600, t, 2.0, { size: 240, col: YEL });
+  drawBursts(t);
+  cap("9 วัน", "", 600, t, 2.0, { size: 260, col: YEL, glow: "rgba(255,140,0,.95)" });
   cap("ไม่มีกระเทียม", "9 days. Zero garlic.", 1420, t, 2.5, { size: 124 });
 }
 function flag(t) {
+  LIGHT = true;
   bgPaper(7);
+  [[290, 3.95], [790, 5.35]].forEach(function (f) { if (t > f[1]) rays(f[0], 760, t, "255,190,40", 0.4 * k01(t, f[1], f[1] + 0.3), 560, 14); });
   function oneFlag(x, ch, at) {
     var u = pop(t, at, 0.3); if (u <= 0) return;
-    c.save(); c.translate(x, 760); c.rotate(Math.sin(t * 2.5 + x) * 0.03);
+    c.save(); c.translate(x, 760 - 900 * (1 - easeOut(k01(t, at, at + 0.25)))); c.rotate(Math.sin(t * 2.5 + x) * 0.03 + (1 - k01(t, at, at + 0.5)) * Math.sin((t - at) * 28) * 0.12);
     c.fillStyle = YEL; c.strokeStyle = RED; c.lineWidth = 12;
     c.fillRect(-190, -260, 380, 520); c.strokeRect(-190, -260, 380, 520);
     if (t > at + 0.25) { c.fillStyle = RED; K.letter(c, ch, 0, 0, 330 * pop(t, at + 0.25, 0.2)); }
@@ -136,6 +243,7 @@ function flag(t) {
   }
   oneFlag(290, "齋", 3.7);
   oneFlag(790, "เจ", 5.1);
+  drawBursts(t);
   cap("เห็นธงนี้", "See this flag?", 1230, t, 6.4, { size: 120, col: RED, stroke: "#fff8e6", ecol: INK });
   cap("ไม่มีของจากสัตว์", "Nothing from an animal.", 1430, t, 7.0, { size: 100, col: INK, stroke: "#fff8e6", ecol: RED });
   // labels under each flag
@@ -153,13 +261,22 @@ var FOODS = [
   { at: 13.5, th: "น้ำปลา", en: "fish sauce", col: "#8a4a18", ok: 0 }
 ];
 function wok(t) {
+  LIGHT = true;
   bgPaper(11);
   var cx = W / 2, cy = 1180, rw = 400, rh = 150, bad = t >= 11.5;
   if (bad && t < 12.2) { c.fillStyle = "rgba(200,16,46," + (0.35 * (1 - k01(t, 11.5, 12.2))) + ")"; c.fillRect(0, 0, W, H); }
-  for (var k = 0; k < 9; k++) { var fx = cx - 320 + k * 80, fl = 60 + 30 * Math.sin(t * 13 + k * 2.1); c.fillStyle = "rgba(255," + (110 + k * 12) + ",40,.85)"; c.beginPath(); c.moveTo(fx - 26, cy + rh + 110); c.quadraticCurveTo(fx, cy + rh + 110 - fl * 2, fx + 26, cy + rh + 110); c.fill(); }
+  var heat = 1 + 0.8 * Math.exp(-Math.max(0, t - 11.5) * 3) * (t >= 11.5 ? 1 : 0);
+  glowBall(cx, cy + rh + 60, 520 * heat, "255,120,30", 0.55);
+  for (var k = 0; k < 9; k++) { var fx = cx - 320 + k * 80, fl = (60 + 30 * Math.sin(t * 13 + k * 2.1) + 18 * Math.sin(t * 29 + k)) * heat; c.fillStyle = "rgba(255," + (110 + k * 12) + ",40,.9)"; c.beginPath(); c.moveTo(fx - 28, cy + rh + 110); c.quadraticCurveTo(fx, cy + rh + 110 - fl * 2, fx + 28, cy + rh + 110); c.fill();
+    c.fillStyle = "rgba(255,240,150,.85)"; c.beginPath(); c.moveTo(fx - 12, cy + rh + 110); c.quadraticCurveTo(fx, cy + rh + 110 - fl, fx + 12, cy + rh + 110); c.fill(); }
+  (function () { var R = rnd(31); c.save(); c.globalCompositeOperation = "lighter";      // sparks off the burner
+    for (var i = 0; i < 26; i++) { var ph = R(), sp = 0.7 + R() * 0.8, u = ((t * sp + ph) % 1), x = cx - 330 + R() * 660 + Math.sin(t * 5 + i) * 20 * u, y = cy + rh + 90 - u * 520 * heat;
+      c.fillStyle = "rgba(255," + (170 + (i % 5) * 15) + ",60," + (1 - u) + ")"; c.beginPath(); c.arc(x, y, 4 + 3 * (1 - u), 0, TAU); c.fill(); }
+    c.restore(); })();
   c.fillStyle = "#2b2a2a"; c.beginPath(); c.ellipse(cx, cy, rw, rh, 0, 0, Math.PI); c.fill();
   c.fillStyle = "#4a4746"; c.beginPath(); c.ellipse(cx, cy, rw, rh * 0.35, 0, 0, TAU); c.fill();
   c.strokeStyle = "#2b2a2a"; c.lineWidth = 22; c.beginPath(); c.moveTo(cx + rw - 10, cy); c.lineTo(cx + rw + 120, cy - 60); c.stroke();
+  for (var st = 0; st < 5; st++) { var su = ((t * 0.5 + st / 5) % 1); c.fillStyle = "rgba(255,255,255," + 0.22 * Math.sin(su * Math.PI) + ")"; c.beginPath(); c.arc(cx - 200 + st * 100 + Math.sin(t * 2 + st) * 30, cy - 40 - su * 420, 40 + su * 70, 0, TAU); c.fill(); }
   // the flag on the cart: up while it's jay, down after the garlic
   var px = 120, top = 520;
   c.strokeStyle = "#6b4a2a"; c.lineWidth = 10; c.beginPath(); c.moveTo(px, top); c.lineTo(px, 1500); c.stroke();
@@ -178,11 +295,13 @@ function wok(t) {
     cap(cur.th, cur.en, cur.big ? 330 : 360, t, cur.at, { size: cur.big ? 150 : 120, col: cur.ok ? INK : RED, stroke: "#fff8e6", ecol: cur.ok ? "#2f7a3a" : RED });
     if (cur.ok) tick(W / 2 + 330, 360, 60, t, cur.at + 0.1); else bigX(W / 2 + (cur.big ? 0 : 330), cur.big ? 330 : 360, cur.big ? 220 : 70, t, cur.at + 0.05);
     if (cur.note && t > cur.at + 0.3) cap(cur.note[0], cur.note[1], 560, t, cur.at + 0.3, { size: 80, col: "#2f7a3a", stroke: "#fff8e6", ecol: INK });
-    if (cur.big) cap("ไม่เจ!", "NOT JAY", 720, t, 11.7, { size: 190, col: RED, stroke: "#fff8e6", ecol: INK });
+    if (cur.big) { rays(W / 2, 720, t, "255,40,40", 0.4 * k01(t, 11.7, 11.9), 700); cap("ไม่เจ!", "NOT JAY", 720, t, 11.7, { size: 200, col: RED, stroke: "#fff8e6", ecol: INK }); }
   }
+  drawBursts(t);
   if (t >= 14.0) cap("งดผักฉุน 5 อย่าง!", "No pungent five.", 400, t, 14.0, { size: 110, col: RED, stroke: "#fff8e6", ecol: INK });
 }
 function menu(t) {
+  LIGHT = true;
   var shots = [["steamed-buns", 15.5, 1.3, "ซาลาเปา ขนมจีบเห็ด", "buns & mushroom dumplings"], ["veg-pork-sign", 16.8, 1.3, "บะหมี่หมูแดง... เจ", "red-pork noodles... jay"], ["soy-protein", 18.1, 1.3, "โปรตีนเกษตร", "soy protein"]];
   var cur = shots[0]; shots.forEach(function (s) { if (t >= s[1]) cur = s; });
   if (t < 19.4) {
@@ -194,6 +313,7 @@ function menu(t) {
     return;
   }
   bgPaper(5);
+  drawBursts(t);
   var dishes = [["ผัดหมี่ซั่ว", "longevity noodles", 19.4], ["จับฉ่าย", "mixed-veg stew", 19.8], ["แกงเขียวหวานเจ", "jay green curry", 20.2]];
   dishes.forEach(function (d, i) {
     var s = pop(t, d[2]); if (s <= 0) return; var y = 480 + i * 470;
@@ -207,13 +327,15 @@ function menu(t) {
 var ORDER = ["phuket", "bkk", "korat", "hatyai", "trang", "krabi", "phangnga", "cm", "cr"];
 function festival(t) {
   if (t < 26.5) {
-    bgPaper(9);
+    LIGHT = true; bgPaper(9);
     c.save(); c.translate(70, 260); var MW = 940, MH = 1360;
     var P = D.drawThailand(c, MW, MH);
     Object.keys(UI.towns).forEach(function (k, i) { var T = UI.towns[k], q = P(T.lat, T.lng); if (D.ICON[T.icon]) D.ICON[T.icon](c, q[0], q[1], 46, 60 + i * 5, T.icon === "fire" || T.icon === "lion" ? t : 0); });
     ORDER.forEach(function (k, i) {
       var at = 21.8 + i * 0.5; if (t < at) return; var T = UI.towns[k], q = P(T.lat, T.lng), s = pop(t, at, 0.3);
-      c.save(); c.translate(q[0] + 6, q[1] - 14); c.scale(s, s); D.flagpin(c, 0, 0, 70, t, i + 1); c.restore();
+      var rp = k01(t, at, at + 0.6); if (rp < 1) { c.strokeStyle = "rgba(200,16,46," + (1 - rp) + ")"; c.lineWidth = 8 * (1 - rp) + 1; c.beginPath(); c.ellipse(q[0], q[1], 20 + rp * 120, (20 + rp * 120) * 0.5, 0, 0, TAU); c.stroke(); }
+      glowBall(q[0], q[1] - 20, 90, "255,200,40", 0.5 * (1 - k01(t, at, at + 0.4)));
+      c.save(); c.translate(q[0] + 6, q[1] - 14 - 160 * (1 - easeOut(k01(t, at, at + 0.2)))); c.scale(s, s); D.flagpin(c, 0, 0, 70, t, i + 1); c.restore();
       D.hand(c, T.name, q[0] + (T.dx || 0) * 1.6, q[1] + 34, 34, RED, T.al || "center", "#fbf2d9");
     });
     c.restore();
@@ -224,27 +346,41 @@ function festival(t) {
   if (t < 29.5) {
     var cur = shots[0]; shots.forEach(function (s) { if (t >= s[1]) cur = s; });
     c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
-    photo(IMG[cur[0]], t, cur[1], cur[2], 0.2);
-    cap(cur[3], cur[4], 1400, t, cur[1] + 0.05, { size: 130 });
+    var pz2 = 1 + 0.18 * Math.pow(1 - k01(t, cur[1], cur[1] + 0.3), 3);
+    c.save(); c.translate(W / 2, H / 2); c.scale(pz2, pz2); c.translate(-W / 2, -H / 2); photo(IMG[cur[0]], t, cur[1], cur[2], 0.2); c.restore();
+    if (cur[0] === "firecrackers-2011") { c.fillStyle = "rgba(255,210,140," + 0.35 * Math.max(0, Math.sin(t * 47)) * Math.max(0, Math.sin(t * 13)) + ")"; c.fillRect(0, 0, W, H); }
+    drawBursts(t);
+    cap(cur[3], cur[4], 1400, t, cur[1] + 0.05, { size: 130, glow: cur[0] === "firecrackers-2011" ? "rgba(255,120,0,.9)" : null });
     credit(CREDIT[cur[0]]);
     return;
   }
-  c.fillStyle = "#ffe9b8"; c.fillRect(0, 0, W, H / 2); c.fillStyle = "#d9c08a"; c.fillRect(0, H / 2, W, H / 2);
+  LIGHT = true; c.fillStyle = "#ffe9b8"; c.fillRect(0, 0, W, H / 2); c.fillStyle = "#d9c08a"; c.fillRect(0, H / 2, W, H / 2);
+  rays(W / 2, H / 2, t, "255,170,40", 0.45, 1400, 22);
   c.save(); c.scale(W / 540, W / 540); c.translate(0, (H * 540 / W - 540) / 2 - 60);
   D.SCENE.lion(c, 540, 540, t * 1.6);
   c.restore();
-  cap("เชิดสิงโต!", "lion dance!", 330, t, 29.5, { size: 150, col: RED, stroke: "#fff8e6", ecol: INK });
+  drawBursts(t);
+  cap("เชิดสิงโต!", "lion dance!", 330, t, 29.5, { size: 160, col: RED, stroke: "#fff8e6", ecol: INK });
 }
 function legend(t) {
   c.fillStyle = "#0b0618"; c.fillRect(0, 0, W, H);
-  var R = rnd(5); for (var i = 0; i < 260; i++) { c.fillStyle = "rgba(255,245,220," + (0.25 + 0.3 * Math.sin(t * 1.5 + i)) + ")"; c.fillRect(R() * W, R() * H, 2, 2); }
+  glowBall(W * 0.3, H * 0.62, 900, "120,40,160", 0.35); glowBall(W * 0.75, H * 0.3, 700, "200,60,90", 0.22);
+  var R = rnd(5); for (var i = 0; i < 300; i++) { var sx = R() * W, sy = R() * H, sz = R() < 0.1 ? 4 : 2; c.fillStyle = "rgba(255,245,220," + (0.3 + 0.35 * Math.sin(t * 2.2 + i)) + ")"; c.fillRect(sx, sy, sz, sz); }
+  [[32.6, 0.95, 0.12, 0.35, 0.3], [35.2, 0.1, 0.7, 0.8, 0.55]].forEach(function (m) {            // shooting stars
+    var u = k01(t, m[0], m[0] + 0.55); if (u <= 0 || u >= 1) return;
+    var x1 = (m[1] + (m[3] - m[1]) * u) * W, y1 = (m[2] + (m[4] - m[2]) * u) * H, x0 = (m[1] + (m[3] - m[1]) * Math.max(0, u - 0.25)) * W, y0 = (m[2] + (m[4] - m[2]) * Math.max(0, u - 0.25)) * H;
+    var g = c.createLinearGradient(x0, y0, x1, y1); g.addColorStop(0, "rgba(255,240,200,0)"); g.addColorStop(1, "rgba(255,250,230," + (1 - u) + ")");
+    c.strokeStyle = g; c.lineWidth = 6; c.lineCap = "round"; c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1, y1); c.stroke(); glowBall(x1, y1, 60, "255,240,200", 0.8 * (1 - u));
+  });
   var S = [[0.80, 0.32], [0.78, 0.44], [0.60, 0.47], [0.56, 0.36], [0.42, 0.39], [0.30, 0.42], [0.16, 0.54]].map(function (p) { return [p[0] * W, p[1] * H]; });
   var n = clamp(Math.floor((t - 31.4) / 0.25) + 1, 0, 7);
+  if (n === 7) { c.save(); c.shadowColor = "rgba(255,200,40,.9)"; c.shadowBlur = 40; }
   c.strokeStyle = "rgba(255,210,31,.85)"; c.lineWidth = 6; c.beginPath();
   for (var k = 0; k < n; k++) { if (k) c.lineTo(S[k][0], S[k][1]); else c.moveTo(S[k][0], S[k][1]); }
   if (n === 7) { c.moveTo(S[3][0], S[3][1]); c.lineTo(S[0][0], S[0][1]); }
-  c.stroke();
-  S.forEach(function (p, k) { var on = k < n; c.fillStyle = on ? YEL : "#fff6e0"; c.beginPath(); c.arc(p[0], p[1], on ? 16 : 9, 0, TAU); c.fill(); });
+  c.stroke(); if (n === 7) c.restore();
+  S.forEach(function (p, k) { var on = k < n, at = 31.4 + k * 0.25; if (on) { glowBall(p[0], p[1], 110 + 60 * (1 - k01(t, at, at + 0.4)), "255,200,60", 0.55 + 0.4 * (1 - k01(t, at, at + 0.4))); rays(p[0], p[1], -t, "255,230,150", 0.5 * (1 - k01(t, at, at + 0.5)), 220, 8); }
+    c.fillStyle = on ? "#fff4b8" : "#fff6e0"; c.beginPath(); c.arc(p[0], p[1], on ? 16 : 9, 0, TAU); c.fill(); });
   if (t >= 33.5) {
     var e = k01(t, 33.5, 34.0) * (0.75 + 0.25 * Math.sin(t * 6));
     [[S[5][0] - 30, S[5][1] - 60], [S[6][0] - 70, S[6][1] + 110]].forEach(function (q) {
@@ -252,12 +388,14 @@ function legend(t) {
       c.fillStyle = g; c.fillRect(q[0] - 90, q[1] - 90, 180, 180); c.fillStyle = "rgba(255,210,220," + e + ")"; c.beginPath(); c.arc(q[0], q[1], 14, 0, TAU); c.fill();
     });
   }
-  cap("ดาว 7 ดวง", "7 stars", 300, t, 31.2, { size: 120, col: YEL });
+  drawBursts(t);
+  cap("ดาว 7 ดวง", "7 stars", 300, t, 31.2, { size: 120, col: YEL, glow: "rgba(255,180,0,.8)" });
   cap("+ 2 ดวงที่มองไม่เห็น", "+ 2 nobody can see", 1180, t, 33.5, { size: 92 });
-  cap("= เทพเจ้า 9 องค์", "= the Nine Emperor Gods", 1400, t, 34.3, { size: 104, col: YEL });
+  cap("= เทพเจ้า 9 องค์", "= the Nine Emperor Gods", 1400, t, 34.3, { size: 104, col: YEL, glow: "rgba(255,180,0,.8)" });
 }
 var NB = null;
 function north(t) {
+  LIGHT = true;
   if (!NB) {                                       // the doodled old city, drawn once
     NB = document.createElement("canvas"); NB.width = W; NB.height = H; var b = NB.getContext("2d");
     D.paper(b, W, H, 4);
@@ -272,30 +410,41 @@ function north(t) {
   c.drawImage(NB, 0, 0);
   var ps = REEL.places.filter(function (p) { return p.prov === "cm"; });
   c.save(); c.translate(0, 180);
-  ps.forEach(function (p, i) { var at = 37.3 + i * 0.07; if (t < at) return; var q = NB.P(p.lat, p.lng); if (q[1] < -20 || q[1] > H) return; var s = pop(t, at, 0.25); c.save(); c.translate(q[0], q[1]); c.scale(2.2 * s, 2.2 * s); D.pin(c, 0, 0, p.k, i * 3 + 1, false); c.restore(); });
+  ps.forEach(function (p, i) { var at = 37.3 + i * 0.07; if (t < at) return; var q = NB.P(p.lat, p.lng); if (q[1] < -20 || q[1] > H) return; var s = pop(t, at, 0.25);
+    var rp = k01(t, at, at + 0.5); if (rp < 1) { c.strokeStyle = "rgba(255,170,0," + (1 - rp) + ")"; c.lineWidth = 6 * (1 - rp) + 1; c.beginPath(); c.arc(q[0], q[1], 10 + rp * 80, 0, TAU); c.stroke(); } c.save(); c.translate(q[0], q[1]); c.scale(2.2 * s, 2.2 * s); D.pin(c, 0, 0, p.k, i * 3 + 1, false); c.restore(); });
   c.restore();
   cap("เชียงใหม่ เชียงราย", "Chiang Mai · Chiang Rai", 190, t, 37.1, { size: 110, col: RED, stroke: "#fff8e6", ecol: INK });
   cap("ศาลเจ้า + ร้านเจ 60 ที่", "60 shrines & jay kitchens, mapped", 1460, t, 38.6, { size: 96, col: INK, stroke: "#fff8e6", ecol: RED });
 }
 function end(t) {
   bgRed();
-  bunting(t, 140, 70, 9, 96); bunting(t, 360, 80, 11, 78); bunting(t, 1500, 70, 9, 96); bunting(t, 1700, 60, 11, 78);
-  cap("กินเจ", "Kin Jay", 760, t, 41.6, { size: 260, col: YEL });
-  cap("10–18 ต.ค. 2569", "10–18 October 2026", 1150, t, 42.2, { size: 100 });
-  cap("motdang.net/sites/kin-jay", "", 1390, t, 42.8, { size: 62, col: YEL });
+  rays(W / 2, 760, t, "255,190,50", 0.5 * k01(t, 41.5, 41.9), 1500, 24);
+  drawBursts(t);
+  embers(t, 60, "255,200,90", 0.9, 9);
+  bunting(t, 140, 70, 9, 96, k01(t, 41.5, 41.9)); bunting(t, 360, 80, 11, 78, k01(t, 41.6, 42.0)); bunting(t, 1500, 70, 9, 96); bunting(t, 1700, 60, 11, 78);
+  var pulse = 1 + 0.04 * Math.max(0, Math.sin((t - 41.6) * Math.PI * 2));   // on the beat
+  c.save(); c.translate(W / 2, 700); c.scale(pulse, pulse); c.translate(-W / 2, -700);
+  cap("กินเจ", "Kin Jay", 700, t, 41.6, { size: 280, col: YEL, glow: "rgba(255,150,0,.95)", esize: 110 });
+  c.restore();
+  cap("10–18 ต.ค. 2569", "10–18 October 2026", 1130, t, 42.2, { size: 100 });
+  cap("motdang.net/sites/kin-jay", "", 1360, t, 42.8, { size: 62, col: YEL });
 }
 
 window.stage = {
   build: function () { return 45; },
   render: function (t) {
-    var sh = shake(t);
+    var sh = shake(t), z = 1;
+    HITS.forEach(function (h) { var d = t - h[0]; if (d >= 0 && d < 0.5) z += h[1] / 30 * 0.07 * Math.exp(-d * 9); });   // a zoom punch on each hit
+    WIPES.concat(FLASHES).forEach(function (at) { var d = t - at; if (d >= 0 && d < 0.4) z += 0.07 * Math.pow(1 - d / 0.4, 2); });
+    LIGHT = false;
     c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = "#000"; c.fillRect(0, 0, W, H);
-    c.save(); c.translate(sh[0], sh[1]);
+    c.save(); c.translate(W / 2 + sh[0], H / 2 + sh[1]); c.scale(z, z); c.translate(-W / 2, -H / 2);
     for (var i = 0; i < SEC.length; i++) if (t >= SEC[i][0] && t < SEC[i][1]) { SEC[i][2](t); break; }
     if (t >= 45) end(t);
     c.restore();
-    // a white flash on each cut
-    SEC.forEach(function (s) { var d = t - s[0]; if (s[0] > 0 && d >= 0 && d < 0.12) { c.fillStyle = "rgba(255,255,255," + (0.5 * (1 - d / 0.12)) + ")"; c.fillRect(0, 0, W, H); } });
+    vignette(LIGHT ? 0.22 : 0.5);
+    FLASHES.forEach(function (at) { var d = t - at; if (d >= 0 && d < 0.14) { c.fillStyle = "rgba(255,250,235," + (0.7 * (1 - d / 0.14)) + ")"; c.fillRect(0, 0, W, H); } });
+    WIPES.forEach(function (at) { wipe(t, at); });
   }
 };
 Promise.all([document.fonts.ready, document.fonts.load("900 40px 'Noto Sans Thai'", "กินเจ"), document.fonts.load("40px Sriracha", "เชียงใหม่"), document.fonts.load("900 40px 'Noto Serif TC'", "齋")].concat(
