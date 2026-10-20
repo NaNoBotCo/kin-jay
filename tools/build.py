@@ -6,6 +6,7 @@ are in docs/places.json, written by places.py from Mot Dang's records.
 Run:  python3 tools/build.py [--motdang]
 """
 import html
+import ogcards
 import json
 import os
 import re
@@ -227,6 +228,8 @@ def write_site(out, md):
 
 def main():
     write_site(DOCS, False)
+    ogcards.copy(os.path.join(HERE, ".."), DOCS)
+    ogcards.apply_tree(DOCS, GH)
     print("built en + th -> docs/")
     if "--motdang" in sys.argv:
         md = os.path.join(HERE, "..", "..", "mot-dang")
@@ -236,7 +239,7 @@ def main():
                 continue
             if os.path.isdir(out):
                 shutil.rmtree(out)
-            shutil.copytree(DOCS, out, ignore=shutil.ignore_patterns("robots.txt", ".DS_Store"))
+            shutil.copytree(DOCS, out, ignore=shutil.ignore_patterns("robots.txt", ".DS_Store", "og"))
             write_site(out, True)
             shutil.copy(os.path.join(HERE, "motdang_card.json"), os.path.join(out, "card.json"))
             print("built en + th ->", os.path.normpath(out))
